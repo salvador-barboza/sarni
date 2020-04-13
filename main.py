@@ -10,6 +10,7 @@ class CalcLexer(Lexer):
       INT,
       FLOAT,
       CHAR,
+
       # Tipos
       ENTERO,
       DECIMAL,
@@ -19,10 +20,13 @@ class CalcLexer(Lexer):
       FUNCION,
       REGRESA,
       MIENTRAS,
+      VOID,
+
       # Condicionales
       SI,
       ENTONCES,
       SINO,
+
       # Ciclos
       MIENTRAS,
       HAZ,
@@ -33,7 +37,11 @@ class CalcLexer(Lexer):
       # Funciones reservadas
       LEE,
       ESCRIBE,
-      LETRERO
+      LETRERO,
+
+      # Operadores
+      IGUAL,
+      DIFERENTE
      }
 
     ignore = ' \t'
@@ -52,6 +60,7 @@ class CalcLexer(Lexer):
     FLOAT = r'float'
     CHAR = r'char'
     FUNCION = r'funcion'
+    VOID = r'void'
     REGRESA = r'regresa'
     SI = r'si'
     ENTONCES = r'entonces'
@@ -102,20 +111,10 @@ class CalcLexer(Lexer):
 
 class CalcParser(Parser):
     tokens = CalcLexer.tokens
-
-    # precedence = (
-    #     ('left', '+', '-'),
-    #     ('left', '*', '/'),
-    #     ('right', 'UMINUS'),
-    #     )
+    start = 'programa'
 
     def __init__(self):
         self.names = { }
-
-    @_('PROGRAMA ID',
-       'VAR ')
-    def statement(self, p):
-      return
 
     # START exp
     @_('termino',
@@ -160,10 +159,10 @@ class CalcParser(Parser):
 
     #START ESTATUTO
     @_('asignacion',
-      'funciones'
-      'lectura'
-      'escritura'
-      'decision'
+      'funciones',
+      'lectura',
+      'escritura',
+      'decision',
       'condicional',
       'no_condicional'
     )
@@ -195,7 +194,7 @@ class CalcParser(Parser):
       return
 
     @_('ID',
-      'expresion'
+      'expresion',
       'ID "," lectura_aux',
       'expresion "," lectura_aux')
     def lectura_aux(self, p):
@@ -204,22 +203,101 @@ class CalcParser(Parser):
 
     #START ESCRITURA
     @_('ESCRIBE "(" escritura_aux ")" ";"')
-    def lectura(self, p):
+    def escritura(self, p):
       return
 
     @_('ID',
-      'expresion'
+      'expresion',
       'ID "," escritura_aux',
       'expresion "," escritura_aux')
     def escritura_aux(self, p):
       return
     #END ESCRITURA
 
-    #START NO_CONDICIO
-    @_('ID "=" expresion')
-    def asignacion(self, p):
+    #START NO_CONDICIONAL
+    @_('DESDE ID "=" expresion HASTA expresion HACER')
+    def no_condicional(self, p):
       return
-    #END ASIGNACION
+    #END NO_CONDICIONAL
+
+    #START CONDICIONAL
+    @_('MIENTRAS "(" expresion ")" HAZ bloque')
+    def condicional(self, p):
+      return
+    #END CONDICIONAL
+
+    #START DECISION
+    @_('SI "(" expresion ")" ENTONCES estatuto SINO bloque',
+        'SI "(" expresion ")" ENTONCES estatuto')
+    def decision(self, p):
+      return
+    #END DECISION
+
+    #START PARAMS
+    @_('"(" VAR tipo ":" ID ";" ")"',
+      '"(" VAR tipo ":" ID ";" paramsaux ")"')
+    def params(self, p):
+      return
+
+    @_('tipo ":" ID ";"')
+    def paramsaux(self, p):
+      return
+    #END PARAMS
+
+    #START FUNCIONES
+    @_('FUNCION funciones_tipo_de_retorno ID params ";" bloque funciones_aux')
+    def funciones(self, p):
+      return
+
+    @_('tipo',
+      'VOID')
+    def funciones_tipo_de_retorno(self, p):
+      return
+
+    @_('funciones', '')
+    def funciones_aux(self, p):
+      return
+    #END FUNCIONES
+
+    #START TIPO
+    @_('INT',
+      'FLOAT',
+      'CHAR')
+    def tipo(self, p):
+      return
+    #END TIPO
+
+    #START VARS
+    @_('VAR tipo ":" lista_id ";"',
+    'VAR tipo ":" lista_id ";" varsaux')
+    def vars(self, p):
+      return
+
+    @_('tipo ":" lista_id ";"')
+    def varsaux(self, p):
+      return
+    #END VARS
+
+    #START LISTA_ID
+    @_('ID lista_accesor lista_accesor')
+    def lista_id(self, p):
+      return
+
+    @_('"[" ENTERO "]"')
+    def lista_accesor(self, p):
+      return
+    #END LISTA_ID
+
+    #START PROGRAMA
+    @_('PROGRAMA ID ";" vars funciones PRINCIPAL bloque',
+        'PROGRAMA ID ";" vars PRINCIPAL bloque',
+        'PROGRAMA ID ";" funciones PRINCIPAL bloque',
+        'PROGRAMA ID ";" PRINCIPAL bloque')
+    def programa(self, p):
+      return
+    #END PROGRAMA
+
+
 
 if __name__ == '__main__':
     lexer = CalcLexer()
