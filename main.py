@@ -1,4 +1,7 @@
 from sly import Lexer, Parser
+from dirfunciones import DirectorioFunciones, TuplaDirectorioFunciones, ReturnType, TuplaTablaVariables, VarType
+
+func_dir = DirectorioFunciones()
 
 class CalcLexer(Lexer):
     tokens = {
@@ -111,7 +114,12 @@ class CalcLexer(Lexer):
 
 class CalcParser(Parser):
     tokens = CalcLexer.tokens
-    start = 'programa'
+    start = 'funciones'
+
+    precedence = (
+        ('left', '+', '-'),
+        ('left', '*', '/'),
+        )
 
     def __init__(self):
         self.names = { }
@@ -176,7 +184,8 @@ class CalcParser(Parser):
       return
 
 
-    @_('estatuto',
+    @_('empty',
+        'estatuto',
         'estatuto bloqueaux')
     def bloqueaux(self, p):
       return
@@ -234,27 +243,54 @@ class CalcParser(Parser):
     #END DECISION
 
     #START PARAMS
-    @_('"(" VAR tipo ":" ID ";" ")"',
-      '"(" VAR tipo ":" ID ";" paramsaux ")"')
-    def params(self, p):
-      return
 
-    @_('tipo ":" ID ";"')
+    @_('"(" empty ")"')
+    def params(self, p):
+      return []
+
+    @_('"(" VAR tipo ":" ID ")"')
+    def params(self, p):
+      var_list = [TuplaTablaVariables(name=p.ID, type=VarType(p.tipo))]
+      return var_list
+
+    @_('"(" VAR tipo ":" ID paramsaux ")"')
+    def params(self, p):
+      var_list = [TuplaTablaVariables(name=p.ID, type=VarType(p.tipo))] + p.paramsaux
+      return var_list
+
+
+    @_('"," VAR tipo ":" ID paramsaux')
     def paramsaux(self, p):
-      return
+      return [TuplaTablaVariables(
+        name= p.ID,
+        type = VarType(p.tipo)
+      )] + p.paramsaux
+
+    @_('empty')
+    def paramsaux(self, p):
+      return []
     #END PARAMS
 
     #START FUNCIONES
     @_('FUNCION funciones_tipo_de_retorno ID params ";" bloque funciones_aux')
     def funciones(self, p):
-      return
+      dir_entry = TuplaDirectorioFunciones(
+        name = p.ID,
+        return_type = ReturnType(p.funciones_tipo_de_retorno),
+        vars_table = dict(),
+      )
+      dir_entry.add_vars(p.params)
+
+      print(dir_entry)
+      func_dir.add_func_entry(dir_entry)
+
 
     @_('tipo',
       'VOID')
     def funciones_tipo_de_retorno(self, p):
-      return
+      return p[0]
 
-    @_('funciones', '')
+    @_('funciones', 'empty')
     def funciones_aux(self, p):
       return
     #END FUNCIONES
@@ -264,18 +300,29 @@ class CalcParser(Parser):
       'FLOAT',
       'CHAR')
     def tipo(self, p):
-      return
+      return p[0]
     #END TIPO
 
     #START VARS
-    @_('VAR tipo ":" lista_id ";"',
-    'VAR tipo ":" lista_id ";" varsaux')
+    @_('VAR tipo ":" lista_id ";"')
     def vars(self, p):
+      return [TuplaTablaVariables(name=p.lista_id, type=VarType(p.tipo))]
+
+    @_('VAR tipo ":" lista_id ";" varsaux')
+    def vars(self, p):
+      return [TuplaTablaVariables(name=p.lista_id, type=VarType(p.tipo))] + p.varsaux
       return
 
-    @_('tipo ":" lista_id ";"')
+    @_('tipo ":" lista_id ";" varsaux')
     def varsaux(self, p):
-      return
+      return [TuplaTablaVariables(
+        name= p.ID,
+        type = VarType(p.tipo)
+      )] + p.paramsaux
+
+    @_('empty')
+    def varsaux(self, p):
+      return []
     #END VARS
 
     #START LISTA_ID
@@ -290,22 +337,33 @@ class CalcParser(Parser):
 
     #START PROGRAMA
     @_('PROGRAMA ID ";" vars funciones PRINCIPAL bloque',
-        'PROGRAMA ID ";" vars PRINCIPAL bloque',
-        'PROGRAMA ID ";" funciones PRINCIPAL bloque',
+        'PROGRAMA ID ";" vars PRINCIPAL bloque')
+    def programa(self, p):
+      func_dir.add_global_vars(p.vars)
+      print(func_dir.global_var_dir)
+      return
+
+    @_('PROGRAMA ID ";" funciones PRINCIPAL bloque',
         'PROGRAMA ID ";" PRINCIPAL bloque')
     def programa(self, p):
       return
     #END PROGRAMA
+
+    #START EMPTY
+    @_('')
+    def empty(self, p):
+      pass
+    #END EMPTY
 
 
 
 if __name__ == '__main__':
     lexer = CalcLexer()
     parser = CalcParser()
-    while True:
-        try:
-            text = input('calc > ')
-        except EOFError:
-            break
-        if text:
-            parser.parse(lexer.tokenize(text))
+    # while True:
+        # try:
+        #     text = input('calc > ')
+        # except EOFError:
+        #     break
+        # if text:
+    parser.parse(lexer.tokenize("funcion void cacas (var int:par1, var char:chava, var float:param3) ; {}"))
