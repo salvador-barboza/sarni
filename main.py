@@ -1,7 +1,9 @@
 from sly import Lexer, Parser
 from dirfunciones import DirectorioFunciones, TuplaDirectorioFunciones, ReturnType, TuplaTablaVariables, VarType
+from cubosemantico import CuboSemantico
 
 func_dir = DirectorioFunciones()
+cubo_seman = CuboSemantico()
 
 class CalcLexer(Lexer):
     tokens = {
