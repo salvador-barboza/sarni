@@ -1,9 +1,10 @@
 from sly import Lexer, Parser
 from dirfunciones import DirectorioFunciones, TuplaDirectorioFunciones, ReturnType, TuplaTablaVariables, VarType
-from cubosemantico import CuboSemantico
+# from statements.Statement import Expr, DiffExpr, SumExpr, Literal, Var, MultExpr, DivExpr
+
 
 func_dir = DirectorioFunciones()
-cubo_seman = CuboSemantico()
+# cubo_seman = CuboSemantico()
 
 class CalcLexer(Lexer):
     tokens = {
@@ -90,15 +91,15 @@ class CalcLexer(Lexer):
       t.value = t.value
       return t # Ver si jala igual sin la funcion    @_(r'\d+')
 
-    @_(r'\d+.\d+')
-    def DECIMAL(self, t):
-      t.value = float(t.value)
-      return t
-
     @_(r'[0-9]+')
     def ENTERO(self, t):
         t.value = int(t.value)
         return t
+
+    @_(r'\d+.\d+')
+    def DECIMAL(self, t):
+      t.value = float(t.value)
+      return t
 
     @_(r'\'.\'')
     def CARACTER(self, t):
@@ -114,57 +115,77 @@ class CalcLexer(Lexer):
         print("Illegal character '%s'" % t.value[0])
         self.index += 1
 
+
+from code_generation.QuadrupleList import QuadrupleList
+
 class CalcParser(Parser):
     tokens = CalcLexer.tokens
-    start = 'funciones'
+    start = 'bloque'
+    quad_list = QuadrupleList()
 
     precedence = (
         ('left', '+', '-'),
-        ('left', '*', '/'),
-        )
+        ('left', '*', '/')
+      )
 
     def __init__(self):
         self.names = { }
 
     # START exp
-    @_('termino',
-      'termino "+" exp',
+    @_('termino')
+    def exp(self, p): return p[0]
+
+    @_('termino "+" exp',
       'termino "-" exp')
     def exp(self, p):
-      return
+      temp_var = self.quad_list.get_next_temp()
+      self.quad_list.add_quadd(p[1], p[0], p[2], temp_var)
+      print(p[0], p[1], p[2])
+      return temp_var
     # END exp
 
     #START termino
-    @_('factor',
-      'factor "*" factor',
-      'factor "/" factor')
+    @_('factor')
+    def termino(self, p): return p[0]
+
+    @_('factor "*" termino',
+      'factor "/" termino')
     def termino(self, p):
-      return
+      temp_var = self.quad_list.get_next_temp()
+      self.quad_list.add_quadd(p[1], p[0], p[2], temp_var)
+      print(p[0], p[1], p[2])
+      return temp_var
     #END termino
 
     # START factor
-    @_('"(" expresion ")"',
-    'ENTERO',
-    'ID',
-    '"+" ENTERO',
-    '"-" ENTERO',
-    '"+" ID',
-    '"-" ID')
-    def factor(self, p):
-      return
+    @_('"(" expresion ")"')
+    def factor(self, p): return p[1]
+    @_('ENTERO')
+    def factor(self, p): return p[0]
+    @_('ID')
+    def factor(self, p): return p[0]
+
     # END factor
 
 
     # START expresion
-    @_('exp',
-       'exp "<" exp',
-       'exp ">" exp',
-       'exp IGUAL exp',
+    @_('exp')
+    def expresion(self, p): return p[0]
+
+    @_('exp "<" exp',
+       'exp ">" exp')
+    def expresion(self, p):
+      temp_var = self.quad_list.get_next_temp()
+      self.quad_list.add_quadd(p[1], p[0], p[2], temp_var)
+      print(p[0], p[1], p[2])
+      return temp_var
+
+    @_('exp IGUAL exp',
        'exp DIFERENTE exp',
        'exp "&" exp',
        'exp "|" exp')
     def expresion(self, p):
-      return
+      return p
     #END expresion
 
     #START ESTATUTO
@@ -194,8 +215,10 @@ class CalcParser(Parser):
     #END BLOQUE
 
     #START ASIGNACION
-    @_('ID "=" expresion')
+    @_('ID "=" expresion ";"')
     def asignacion(self, p):
+      self.quad_list.add_quadd('=', p[0], '', p[2])
+      print('=', p[0], '', p[2])
       return
     #END ASIGNACION
 
@@ -205,10 +228,15 @@ class CalcParser(Parser):
       return
 
     @_('ID',
-      'expresion',
-      'ID "," lectura_aux',
+      'expresion')
+    def lectura_aux(self, p):
+      self.quad_list.add_quadd('READ', '', '', p[0])
+      return
+
+    @_('ID "," lectura_aux',
       'expresion "," lectura_aux')
     def lectura_aux(self, p):
+      self.quad_list.add_quadd('READ', '', '', p[0])
       return
     #END LECTURA
 
@@ -218,10 +246,15 @@ class CalcParser(Parser):
       return
 
     @_('ID',
-      'expresion',
-      'ID "," escritura_aux',
+      'expresion')
+    def escritura_aux(self, p):
+      self.quad_list.add_quadd('WRITE', '', '', p[0])
+      return
+
+    @_('ID "," escritura_aux',
       'expresion "," escritura_aux')
     def escritura_aux(self, p):
+      self.quad_list.add_quadd('WRITE', '', '', p[0])
       return
     #END ESCRITURA
 
@@ -368,4 +401,9 @@ if __name__ == '__main__':
         # except EOFError:
         #     break
         # if text:
-    parser.parse(lexer.tokenize("funcion void cacas (var int:par1, var char:chava, var float:param3) ; {}"))
+    # parser.parse(lexer.tokenize("funcion void cacas (var int:par1, var char:chava, var float:param3) ; {}"))
+    program = "{ C=1; escribe(A+B+C*X); hola = 5; hola = 6; hola = 6; hola = 7; hola = 8;}"
+    print(program)
+    parser.parse(lexer.tokenize(program))
+    for q in parser.quad_list.quadruples:
+      print(q)
