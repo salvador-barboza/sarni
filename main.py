@@ -120,7 +120,7 @@ from code_generation.QuadrupleList import QuadrupleList
 
 class CalcParser(Parser):
     tokens = CalcLexer.tokens
-    start = 'bloque'
+    start = 'decision'
     quad_list = QuadrupleList()
 
     precedence = (
@@ -133,7 +133,9 @@ class CalcParser(Parser):
 
     # START exp
     @_('termino')
-    def exp(self, p): return p[0]
+    def exp(self, p):
+      print("estoy en exp (termino)")
+      return p[0]
 
     @_('termino "+" exp',
       'termino "-" exp')
@@ -146,7 +148,9 @@ class CalcParser(Parser):
 
     #START termino
     @_('factor')
-    def termino(self, p): return p[0]
+    def termino(self, p):
+      print("estoy en termino (factor)")
+      return p[0]
 
     @_('factor "*" termino',
       'factor "/" termino')
@@ -161,7 +165,9 @@ class CalcParser(Parser):
     @_('"(" expresion ")"')
     def factor(self, p): return p[1]
     @_('ENTERO')
-    def factor(self, p): return p[0]
+    def factor(self, p):
+      print("estoy en factor token entero")
+      return p[0]
     @_('ID')
     def factor(self, p): return p[0]
 
@@ -178,6 +184,7 @@ class CalcParser(Parser):
       temp_var = self.quad_list.get_next_temp()
       self.quad_list.add_quadd(p[1], p[0], p[2], temp_var)
       print(p[0], p[1], p[2])
+      print("estoy en expresion (exp < exp) token <")
       return temp_var
 
     @_('exp IGUAL exp',
@@ -271,8 +278,24 @@ class CalcParser(Parser):
     #END CONDICIONAL
 
     #START DECISION
-    @_('SI "(" expresion ")" ENTONCES estatuto SINO bloque',
-        'SI "(" expresion ")" ENTONCES estatuto')
+    @_('SI "(" expresion ")" seen_if ENTONCES bloque seen_estatuto')
+    def decision(self, p):
+      print("estoy en if")
+      return
+
+    @_('')
+    def seen_if(self, p):
+      print("estoy en seen")
+      #print("Saw an A = ", p[-1])
+      return
+
+    @_('')
+    def seen_estatuto(self, p):
+      print("estoy en seen")
+      #print("Saw an A = ", p[-4])   # Access grammar symbol to the left
+      return
+
+    @_('SI "(" expresion ")" ENTONCES estatuto SINO bloque')
     def decision(self, p):
       return
     #END DECISION
@@ -346,7 +369,7 @@ class CalcParser(Parser):
     @_('VAR tipo ":" lista_id ";" varsaux')
     def vars(self, p):
       return [TuplaTablaVariables(name=p.lista_id, type=VarType(p.tipo))] + p.varsaux
-      return
+      #return
 
     @_('tipo ":" lista_id ";" varsaux')
     def varsaux(self, p):
@@ -402,8 +425,12 @@ if __name__ == '__main__':
         #     break
         # if text:
     # parser.parse(lexer.tokenize("funcion void cacas (var int:par1, var char:chava, var float:param3) ; {}"))
-    program = "{ C=1; escribe(A+B+C*X); hola = 5; hola = 6; hola = 6; hola = 7; hola = 8;}"
+    bloque = "{ C=1; escribe(A+B+C*X); hola = 5; hola = 6; hola = 6; hola = 7; hola = 8;}"
+    decision = "si ( 5 > 1 ) entonces {escribe(A+B+C*X);}"
+    program = decision
     print(program)
+    #for a in lexer.tokenize(program):
+      #print(a)
     parser.parse(lexer.tokenize(program))
     for q in parser.quad_list.quadruples:
       print(q)
