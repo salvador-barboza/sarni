@@ -134,7 +134,6 @@ class CalcParser(Parser):
     # START exp
     @_('termino')
     def exp(self, p):
-      print("estoy en exp (termino)")
       return p[0]
 
     @_('termino "+" exp',
@@ -142,14 +141,12 @@ class CalcParser(Parser):
     def exp(self, p):
       temp_var = self.quad_list.get_next_temp()
       self.quad_list.add_quadd(p[1], p[0], p[2], temp_var)
-      print(p[0], p[1], p[2])
       return temp_var
     # END exp
 
     #START termino
     @_('factor')
     def termino(self, p):
-      print("estoy en termino (factor)")
       return p[0]
 
     @_('factor "*" termino',
@@ -166,7 +163,6 @@ class CalcParser(Parser):
     def factor(self, p): return p[1]
     @_('ENTERO')
     def factor(self, p):
-      print("estoy en factor token entero")
       return p[0]
     @_('ID')
     def factor(self, p): return p[0]
@@ -183,8 +179,6 @@ class CalcParser(Parser):
     def expresion(self, p):
       temp_var = self.quad_list.get_next_temp()
       self.quad_list.add_quadd(p[1], p[0], p[2], temp_var)
-      print(p[0], p[1], p[2])
-      print("estoy en expresion (exp < exp) token <")
       return temp_var
 
     @_('exp IGUAL exp',
@@ -205,20 +199,20 @@ class CalcParser(Parser):
       'no_condicional'
     )
     def estatuto(self, p):
-      return
+      return p[0]
     #END ESTATUTO
 
     # START BLOQUE
     @_('"{" bloqueaux "}"')
     def bloque(self, p):
-      return
+      return p[1]
 
 
     @_('empty',
         'estatuto',
         'estatuto bloqueaux')
     def bloqueaux(self, p):
-      return
+      return p[0]
     #END BLOQUE
 
     #START ASIGNACION
@@ -280,22 +274,20 @@ class CalcParser(Parser):
     #START DECISION
     @_('SI "(" expresion ")" seen_if ENTONCES bloque seen_estatuto')
     def decision(self, p):
-      print("estoy en if")
+
       return
 
     @_('')
     def seen_if(self, p):
-      print("estoy en seen")
       #print("Saw an A = ", p[-1])
       return
 
     @_('')
     def seen_estatuto(self, p):
-      print("estoy en seen")
       #print("Saw an A = ", p[-4])   # Access grammar symbol to the left
       return
 
-    @_('SI "(" expresion ")" ENTONCES estatuto SINO bloque')
+    @_('SI "(" expresion ")" seen_if ENTONCES bloque SINO bloque')
     def decision(self, p):
       return
     #END DECISION
@@ -398,7 +390,6 @@ class CalcParser(Parser):
         'PROGRAMA ID ";" vars PRINCIPAL bloque')
     def programa(self, p):
       func_dir.add_global_vars(p.vars)
-      print(func_dir.global_var_dir)
       return
 
     @_('PROGRAMA ID ";" funciones PRINCIPAL bloque',
@@ -426,7 +417,7 @@ if __name__ == '__main__':
         # if text:
     # parser.parse(lexer.tokenize("funcion void cacas (var int:par1, var char:chava, var float:param3) ; {}"))
     bloque = "{ C=1; escribe(A+B+C*X); hola = 5; hola = 6; hola = 6; hola = 7; hola = 8;}"
-    decision = "si ( 5 > 1 ) entonces {escribe(A+B+C*X);}"
+    decision = "si ( 5 > 1 ) entonces {escribe(A+B+C+D+E);}"
     program = decision
     print(program)
     #for a in lexer.tokenize(program):
