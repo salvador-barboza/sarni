@@ -13,30 +13,18 @@ class Operation(Enum):
 class QuadrupleList:
   quadruples = []
   current_temp = 0
+  pointer = 0
 
   def get_next_temp(self):
     self.current_temp += 1
     return 't'+str(self.current_temp)
 
   def add_quadd(self, a, b, c, d):
+    self.pointer += 1
     self.quadruples.append((a, b, c, d))
 
-  # def add_arithmetic_exp(self, exp: ArithmeticExpr):
-  #   self.quadruples.append((exp.op, exp.leftOp, exp.rightOp, self.get_next_temp()))
+  def update_quad_target(self, dir, value):
+    old_tuple = self.quadruples[dir]
+    new_tuple = (old_tuple[0], old_tuple[1], old_tuple[2], value)
+    self.quadruples[dir] = new_tuple
 
-  # def add_arithmetic_exp(self, exp: ArithmeticExpr):
-  #   self.quadruples.append((exp.op, exp.leftOp, exp.rightOp, self.get_next_temp()))
-
-
-
-# class CodeGenerator:
-#   quad_list = QuadrupleList()
-#   op_stack = []
-#   jump_stack = []
-#   exp_stack = []
-#   polish_vec = []
-
-#   def paso1(self,id):
-#     polish_vec.push(id)
-
-#   def paso2()

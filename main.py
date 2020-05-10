@@ -274,21 +274,29 @@ class CalcParser(Parser):
     #START DECISION
     @_('SI "(" expresion ")" seen_if ENTONCES bloque seen_estatuto')
     def decision(self, p):
-
+      self.quad_list.update_quad_target(p.seen_if, p.seen_estatuto)
       return
 
     @_('')
     def seen_if(self, p):
-      #print("Saw an A = ", p[-1])
-      return
+      self.quad_list.add_quadd('JUMPF', -1, -1, -1)
+      return self.quad_list.pointer - 1
 
     @_('')
     def seen_estatuto(self, p):
-      #print("Saw an A = ", p[-4])   # Access grammar symbol to the left
-      return
+      return self.quad_list.pointer
+
+
+
+
 
     @_('SI "(" expresion ")" seen_if ENTONCES bloque SINO bloque')
     def decision(self, p):
+      return
+
+    @_('')
+    def seen_(self, p):
+      #print("Saw an A = ", p[-1])
       return
     #END DECISION
 
