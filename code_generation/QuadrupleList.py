@@ -23,8 +23,8 @@ class QuadrupleList:
     self.pointer += 1
     self.quadruples.append((a, b, c, d))
 
-  def update_quad_target(self, dir, value):
+  def update_target(self, dir, a, b, c):
     old_tuple = self.quadruples[dir]
-    new_tuple = (old_tuple[0], old_tuple[1], old_tuple[2], value)
+    new_tuple = (old_tuple[0], a or old_tuple[1], b or old_tuple[2], c or old_tuple[3])
     self.quadruples[dir] = new_tuple
 

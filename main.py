@@ -1,5 +1,6 @@
 from sly import Lexer, Parser
 from dirfunciones import DirectorioFunciones, TuplaDirectorioFunciones, ReturnType, TuplaTablaVariables, VarType
+from semantic_actions import SemanticActionHandler
 # from statements.Statement import Expr, DiffExpr, SumExpr, Literal, Var, MultExpr, DivExpr
 
 
@@ -68,9 +69,9 @@ class CalcLexer(Lexer):
     FUNCION = r'funcion'
     VOID = r'void'
     REGRESA = r'regresa'
+    SINO = r'sino'
     SI = r'si'
     ENTONCES = r'entonces'
-    SINO = r'sino'
     MIENTRAS = r'mientras'
     HAZ = r'haz'
     DESDE = r'desde'
@@ -120,8 +121,8 @@ from code_generation.QuadrupleList import QuadrupleList
 
 class CalcParser(Parser):
     tokens = CalcLexer.tokens
-    start = 'decision'
-    quad_list = QuadrupleList()
+    start = 'condicional'
+    action_handler = SemanticActionHandler()
 
     precedence = (
         ('left', '+', '-'),
@@ -138,10 +139,7 @@ class CalcParser(Parser):
 
     @_('termino "+" exp',
       'termino "-" exp')
-    def exp(self, p):
-      temp_var = self.quad_list.get_next_temp()
-      self.quad_list.add_quadd(p[1], p[0], p[2], temp_var)
-      return temp_var
+    def exp(self, p): return self.action_handler.consume_arithmetic_op(p[1], p[0], p[2])
     # END exp
 
     #START termino
@@ -151,11 +149,7 @@ class CalcParser(Parser):
 
     @_('factor "*" termino',
       'factor "/" termino')
-    def termino(self, p):
-      temp_var = self.quad_list.get_next_temp()
-      self.quad_list.add_quadd(p[1], p[0], p[2], temp_var)
-      print(p[0], p[1], p[2])
-      return temp_var
+    def termino(self, p): return self.action_handler.consume_arithmetic_op(p[1], p[0], p[2])
     #END termino
 
     # START factor
@@ -176,10 +170,7 @@ class CalcParser(Parser):
 
     @_('exp "<" exp',
        'exp ">" exp')
-    def expresion(self, p):
-      temp_var = self.quad_list.get_next_temp()
-      self.quad_list.add_quadd(p[1], p[0], p[2], temp_var)
-      return temp_var
+    def expresion(self, p): return self.action_handler.consume_relational_op(p[1], p[0], p[2])
 
     @_('exp IGUAL exp',
        'exp DIFERENTE exp',
@@ -190,7 +181,7 @@ class CalcParser(Parser):
     #END expresion
 
     #START ESTATUTO
-    @_('asignacion',
+    @_('asignacion ";"',
       'funciones',
       'lectura',
       'escritura',
@@ -216,88 +207,65 @@ class CalcParser(Parser):
     #END BLOQUE
 
     #START ASIGNACION
-    @_('ID "=" expresion ";"')
-    def asignacion(self, p):
-      self.quad_list.add_quadd('=', p[0], '', p[2])
-      print('=', p[0], '', p[2])
-      return
+    @_('ID "=" expresion')
+    def asignacion(self, p): return self.action_handler.consume_assignment(p[0], p[2])
     #END ASIGNACION
 
     #START LECTURA
     @_('LEE "(" lectura_aux ")" ";"')
-    def lectura(self, p):
-      return
+    def lectura(self, p): return
 
     @_('ID',
       'expresion')
-    def lectura_aux(self, p):
-      self.quad_list.add_quadd('READ', '', '', p[0])
-      return
+    def lectura_aux(self, p): self.action_handler.consume_read(p[0])
 
     @_('ID "," lectura_aux',
       'expresion "," lectura_aux')
-    def lectura_aux(self, p):
-      self.quad_list.add_quadd('READ', '', '', p[0])
-      return
+    def lectura_aux(self, p): self.action_handler.consume_read(p[0])
+
     #END LECTURA
 
     #START ESCRITURA
     @_('ESCRIBE "(" escritura_aux ")" ";"')
-    def escritura(self, p):
-      return
+    def escritura(self, p): return
 
     @_('ID',
       'expresion')
-    def escritura_aux(self, p):
-      self.quad_list.add_quadd('WRITE', '', '', p[0])
-      return
+    def escritura_aux(self, p): self.action_handler.consume_write(p[0])
 
     @_('ID "," escritura_aux',
       'expresion "," escritura_aux')
-    def escritura_aux(self, p):
-      self.quad_list.add_quadd('WRITE', '', '', p[0])
-      return
+    def escritura_aux(self, p): self.action_handler.consume_write(p[0])
     #END ESCRITURA
 
     #START NO_CONDICIONAL
-    @_('DESDE ID "=" expresion HASTA expresion HACER')
+    @_('DESDE asignacion HASTA expresion HACER')
     def no_condicional(self, p):
       return
     #END NO_CONDICIONAL
 
     #START CONDICIONAL
-    @_('MIENTRAS "(" expresion ")" HAZ bloque')
-    def condicional(self, p):
-      return
+    @_('MIENTRAS "(" expresion ")" seen_while HAZ bloque')
+    def condicional(self, p): self.action_handler.end_while(p.expresion)
+
+    @_('')
+    def seen_while(self, p): self.action_handler.start_while()
     #END CONDICIONAL
 
     #START DECISION
-    @_('SI "(" expresion ")" seen_if ENTONCES bloque seen_estatuto')
-    def decision(self, p):
-      self.quad_list.update_quad_target(p.seen_if, p.seen_estatuto)
-      return
+    @_('SI "(" expresion ")" seen_if ENTONCES bloque')
+    def decision(self, p): self.action_handler.end_if(cond=p.expresion)
 
     @_('')
     def seen_if(self, p):
-      self.quad_list.add_quadd('JUMPF', -1, -1, -1)
-      return self.quad_list.pointer - 1
+      return self.action_handler.start_if()
+
+    @_('SI "(" expresion ")" seen_if ENTONCES bloque SINO seen_else bloque')
+    def decision(self, p): self.action_handler.end_else(cond=p.expresion)
 
     @_('')
-    def seen_estatuto(self, p):
-      return self.quad_list.pointer
+    def seen_else(self, p): self.action_handler.start_else()
 
-
-
-
-
-    @_('SI "(" expresion ")" seen_if ENTONCES bloque SINO bloque')
-    def decision(self, p):
-      return
-
-    @_('')
-    def seen_(self, p):
-      #print("Saw an A = ", p[-1])
-      return
     #END DECISION
 
     #START PARAMS
@@ -345,8 +313,7 @@ class CalcParser(Parser):
 
     @_('tipo',
       'VOID')
-    def funciones_tipo_de_retorno(self, p):
-      return p[0]
+    def funciones_tipo_de_retorno(self, p): return p[0]
 
     @_('funciones', 'empty')
     def funciones_aux(self, p):
@@ -425,11 +392,14 @@ if __name__ == '__main__':
         # if text:
     # parser.parse(lexer.tokenize("funcion void cacas (var int:par1, var char:chava, var float:param3) ; {}"))
     bloque = "{ C=1; escribe(A+B+C*X); hola = 5; hola = 6; hola = 6; hola = 7; hola = 8;}"
-    decision = "si ( 5 > 1 ) entonces {escribe(A+B+C+D+E);}"
-    program = decision
+    decision = "si ( 5 > 1 ) entonces {escribe(A+B+C+D+E);} sino {escribe(A+B+C+D+E);}"
+    ciclo = "mientras ( 5 > 1 ) haz {escribe(A+B+C+D+E);}"
+    program = ciclo
     print(program)
     #for a in lexer.tokenize(program):
       #print(a)
     parser.parse(lexer.tokenize(program))
-    for q in parser.quad_list.quadruples:
-      print(q)
+    i = 0
+    for q in parser.action_handler.quad_list.quadruples:
+      print(str(i) + ": " + str(q))
+      i+=1
