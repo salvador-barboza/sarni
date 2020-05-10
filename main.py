@@ -121,7 +121,7 @@ from code_generation.QuadrupleList import QuadrupleList
 
 class CalcParser(Parser):
     tokens = CalcLexer.tokens
-    start = 'condicional'
+    start = 'exp'
     action_handler = SemanticActionHandler()
 
     precedence = (
@@ -394,7 +394,8 @@ if __name__ == '__main__':
     bloque = "{ C=1; escribe(A+B+C*X); hola = 5; hola = 6; hola = 6; hola = 7; hola = 8;}"
     decision = "si ( 5 > 1 ) entonces {escribe(A+B+C+D+E);} sino {escribe(A+B+C+D+E);}"
     ciclo = "mientras ( 5 > 1 ) haz {escribe(A+B+C+D+E);}"
-    program = ciclo
+    aritmetica = "1 + 2"
+    program = aritmetica
     print(program)
     #for a in lexer.tokenize(program):
       #print(a)

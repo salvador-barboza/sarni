@@ -1,15 +1,20 @@
 from code_generation.QuadrupleList import QuadrupleList
+from cubosemantico import CuboSemantico
 
 
 class SemanticActionHandler:
   quad_list = QuadrupleList()
   jump_stack = []
   last_op = ''
+  cubo_seman = CuboSemantico()
 
   def consume_arithmetic_op(self, op, a, b):
-    temp_var = self.quad_list.get_next_temp()
-    self.quad_list.add_quadd(op, a, b, temp_var)
-    return temp_var
+    if self.cubo_seman.typematch(type(a).__name__,str(op),type(b).__name__) != "error":
+      temp_var = self.quad_list.get_next_temp()
+      self.quad_list.add_quadd(op, a, b, temp_var)
+      return temp_var
+    else:
+      raise Exception('TYPE MISMATCH. {} and {} should be compatible through {} operation'.format(str(a),str(b),str(op)))
 
   def consume_relational_op(self, op, a, b):
     temp_var = self.quad_list.get_next_temp()
