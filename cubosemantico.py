@@ -1,5 +1,5 @@
 class CuboSemantico:
-  operando = {"int": 0,"float": 1, "char": 2,"bool": 3}
+  operando = {"int": 0,"float": 1, "str": 2,"bool": 3}
   operador = {"+": 0,"-": 1,"/": 2,"*": 3,"<": 4,">": 5,"==": 6,"!=": 7,"&":8,"|":9}
 
   Cubo = [[["int","int","float","int","bool","bool","bool","bool","error","error"],
@@ -21,4 +21,4 @@ class CuboSemantico:
   ]
 
   def typematch(self,op_izq,operador,op_der):
-    return self.Cubo[self.operando[op_izq]][self.operador[operador]][self.operando[op_der]]
+    return self.Cubo[self.operando[op_izq]][self.operando[op_der]][self.operador[operador]]
