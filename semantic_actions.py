@@ -22,7 +22,7 @@ class SemanticActionHandler:
     return temp_var
 
   def consume_assignment(self, target, value):
-    self.quad_list.add_quadd('=', -1, -1, target)
+    self.quad_list.add_quadd('=', value, -1, target)
 
   def consume_read(self, target):
     self.quad_list.add_quadd('READ', -1, -1, target)
@@ -70,3 +70,17 @@ class SemanticActionHandler:
       jump_on_false_quad = self.jump_stack.pop()
       self.quad_list.add_quadd('JUMP', -1, -1, jump_on_false_quad)
       self.quad_list.update_target(quad_to_update, self.quad_list.pointer)
+  
+  def start_for(self):
+    self.jump_stack.append(self.quad_list.pointer - 2)
+    self.jump_stack.append(self.quad_list.pointer - 1)
+    self.quad_list.add_quadd('JUMPF', -1, -1, -1)
+    self.jump_stack.append(self.quad_list.pointer - 1)
+
+  def end_for(self, cond):
+    quad_to_update = self.jump_stack.pop()
+    jump_on_false_quad = self.jump_stack.pop()
+    quad_declared = self.jump_stack.pop()
+    self.quad_list.add_quadd('+', 1, -1, self.quad_list.quadruples[quad_declared][3])
+    self.quad_list.add_quadd('JUMP', -1, -1, jump_on_false_quad)
+    self.quad_list.update_target(quad_to_update, cond, None, self.quad_list.pointer)
