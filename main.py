@@ -121,7 +121,7 @@ from code_generation.QuadrupleList import QuadrupleList
 
 class CalcParser(Parser):
     tokens = CalcLexer.tokens
-    start = 'exp'
+    start = 'funciones'
     action_handler = SemanticActionHandler()
 
     precedence = (
@@ -279,13 +279,13 @@ class CalcParser(Parser):
       var_list = [TuplaTablaVariables(name=p.ID, type=VarType(p.tipo))]
       return var_list
 
-    @_('"(" VAR tipo ":" ID paramsaux ")"')
+    @_('"(" tipo ":" ID paramsaux ")"')
     def params(self, p):
       var_list = [TuplaTablaVariables(name=p.ID, type=VarType(p.tipo))] + p.paramsaux
       return var_list
 
 
-    @_('"," VAR tipo ":" ID paramsaux')
+    @_('"," tipo ":" ID paramsaux')
     def paramsaux(self, p):
       return [TuplaTablaVariables(
         name= p.ID,
@@ -298,16 +298,15 @@ class CalcParser(Parser):
     #END PARAMS
 
     #START FUNCIONES
-    @_('FUNCION funciones_tipo_de_retorno ID params ";" bloque funciones_aux')
+    @_('FUNCION funciones_tipo_de_retorno ID params vars bloque funciones_aux')
     def funciones(self, p):
       dir_entry = TuplaDirectorioFunciones(
         name = p.ID,
         return_type = ReturnType(p.funciones_tipo_de_retorno),
         vars_table = dict(),
       )
+      dir_entry.add_vars(p.vars)
       dir_entry.add_vars(p.params)
-
-      print(dir_entry)
       func_dir.add_func_entry(dir_entry)
 
 
@@ -329,6 +328,9 @@ class CalcParser(Parser):
     #END TIPO
 
     #START VARS
+    @_('empty')
+    def vars(self, p): return
+
     @_('VAR tipo ":" lista_id ";"')
     def vars(self, p):
       return [TuplaTablaVariables(name=p.lista_id, type=VarType(p.tipo))]
@@ -351,6 +353,10 @@ class CalcParser(Parser):
     #END VARS
 
     #START LISTA_ID
+    @_('ID')
+    def lista_id(self, p):
+      return p[0]
+
     @_('ID lista_accesor lista_accesor')
     def lista_id(self, p):
       return
@@ -384,23 +390,27 @@ class CalcParser(Parser):
 if __name__ == '__main__':
     lexer = CalcLexer()
     parser = CalcParser()
-    # while True:
-        # try:
-        #     text = input('calc > ')
-        # except EOFError:
-        #     break
-        # if text:
-    # parser.parse(lexer.tokenize("funcion void cacas (var int:par1, var char:chava, var float:param3) ; {}"))
+
     bloque = "{ C=1; escribe(A+B+C*X); hola = 5; hola = 6; hola = 6; hola = 7; hola = 8;}"
     decision = "si ( 5 > 1 ) entonces {escribe(A+B+C+D+E);} sino {escribe(A+B+C+D+E);}"
     ciclo = "mientras ( 5 > 1 ) haz {escribe(A+B+C+D+E);}"
     aritmetica = "1 + 2"
-    program = aritmetica
-    print(program)
-    #for a in lexer.tokenize(program):
-      #print(a)
+    modulos = """
+    funcion void test (int: a, int: b)
+    var int: c;
+    {
+      a = a + 2;
+    }
+    """
+    program = modulos
     parser.parse(lexer.tokenize(program))
+
     i = 0
     for q in parser.action_handler.quad_list.quadruples:
       print(str(i) + ": " + str(q))
       i+=1
+
+    for (k, v) in func_dir.dict_funciones.items():
+      print(k)
+      for var in v.vars_table.items():
+        print(var)
