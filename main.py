@@ -1,11 +1,6 @@
 from sly import Lexer, Parser
-from dirfunciones import DirectorioFunciones, TuplaDirectorioFunciones, ReturnType, TuplaTablaVariables, VarType
+from dirfunciones import TuplaDirectorioFunciones, ReturnType, TuplaTablaVariables, VarType
 from semantic_actions import SemanticActionHandler
-# from statements.Statement import Expr, DiffExpr, SumExpr, Literal, Var, MultExpr, DivExpr
-
-
-func_dir = DirectorioFunciones()
-# cubo_seman = CuboSemantico()
 
 class CalcLexer(Lexer):
     tokens = {
@@ -92,15 +87,15 @@ class CalcLexer(Lexer):
       t.value = t.value
       return t # Ver si jala igual sin la funcion    @_(r'\d+')
 
+    @_(r'[0-9]+\.[0-9]+')
+    def DECIMAL(self, t):
+      t.value = float(t.value)
+      return t
+
     @_(r'[0-9]+')
     def ENTERO(self, t):
         t.value = int(t.value)
         return t
-
-    @_(r'\d+.\d+')
-    def DECIMAL(self, t):
-      t.value = float(t.value)
-      return t
 
     @_(r'\'.\'')
     def CARACTER(self, t):
@@ -122,7 +117,7 @@ from code_generation.QuadrupleList import QuadrupleList
 class CalcParser(Parser):
     tokens = CalcLexer.tokens
 
-    start = 'no_condicional'
+    start = 'programa'
 
     action_handler = SemanticActionHandler()
 
@@ -157,14 +152,10 @@ class CalcParser(Parser):
     # START factor
     @_('"(" expresion ")"')
     def factor(self, p): return p[1]
-    @_('ENTERO')
-    def factor(self, p):
-      return p[0]
-    @_('ID')
+
+    @_('ID', 'ENTERO', 'DECIMAL')
     def factor(self, p): return p[0]
-
     # END factor
-
 
     # START expresion
     @_('exp')
@@ -178,8 +169,7 @@ class CalcParser(Parser):
        'exp DIFERENTE exp',
        'exp "&" exp',
        'exp "|" exp')
-    def expresion(self, p):
-      return p
+    def expresion(self, p): return self.action_handler.consume_relational_op(p[1], p[0], p[2])
     #END expresion
 
     #START ESTATUTO
@@ -243,7 +233,7 @@ class CalcParser(Parser):
     #START NO_CONDICIONAL
     @_('DESDE asignacion HASTA expresion seen_for HACER bloque')
     def no_condicional(self, p): self.action_handler.end_for(p.expresion)
-    
+
     @_('')
     def seen_for(self, p):  self.action_handler.start_for()
     #END NO_CONDICIONAL
@@ -280,39 +270,29 @@ class CalcParser(Parser):
 
     @_('"(" VAR tipo ":" ID ")"')
     def params(self, p):
-      var_list = [TuplaTablaVariables(name=p.ID, type=VarType(p.tipo))]
-      return var_list
+      return self.action_handler.add_variable_to_current_scope(TuplaTablaVariables(name=p.ID, type=VarType(p.tipo)))
 
     @_('"(" tipo ":" ID paramsaux ")"')
     def params(self, p):
-      var_list = [TuplaTablaVariables(name=p.ID, type=VarType(p.tipo))] + p.paramsaux
-      return var_list
+      return self.action_handler.add_variable_to_current_scope(TuplaTablaVariables(name=p.ID, type=VarType(p.tipo)))
 
 
     @_('"," tipo ":" ID paramsaux')
     def paramsaux(self, p):
-      return [TuplaTablaVariables(
-        name= p.ID,
-        type = VarType(p.tipo)
-      )] + p.paramsaux
+      return self.action_handler.add_variable_to_current_scope(TuplaTablaVariables(name=p.ID, type=VarType(p.tipo)))
 
     @_('empty')
-    def paramsaux(self, p):
-      return []
+    def paramsaux(self, p): return
     #END PARAMS
 
     #START FUNCIONES
-    @_('FUNCION funciones_tipo_de_retorno ID params vars bloque funciones_aux')
+    @_('function_init params vars bloque funciones_aux')
     def funciones(self, p):
-      dir_entry = TuplaDirectorioFunciones(
-        name = p.ID,
-        return_type = ReturnType(p.funciones_tipo_de_retorno),
-        vars_table = dict(),
-      )
-      dir_entry.add_vars(p.vars)
-      dir_entry.add_vars(p.params)
-      func_dir.add_func_entry(dir_entry)
+      return
 
+    @_('FUNCION funciones_tipo_de_retorno ID')
+    def function_init(self, p):
+      self.action_handler.start_func_scope_var_declaration(p.ID)
 
     @_('tipo',
       'VOID')
@@ -332,28 +312,13 @@ class CalcParser(Parser):
     #END TIPO
 
     #START VARS
-    @_('empty')
-    def vars(self, p): return
-
-    @_('VAR tipo ":" lista_id ";"')
+    @_('VAR tipo lista_id ";" vars')
     def vars(self, p):
-      return [TuplaTablaVariables(name=p.lista_id, type=VarType(p.tipo))]
-
-    @_('VAR tipo ":" lista_id ";" varsaux')
-    def vars(self, p):
-      return [TuplaTablaVariables(name=p.lista_id, type=VarType(p.tipo))] + p.varsaux
+      self.action_handler.add_variable_to_current_scope(TuplaTablaVariables(name=p.lista_id, type=VarType(p.tipo)))
       #return
 
-    @_('tipo ":" lista_id ";" varsaux')
-    def varsaux(self, p):
-      return [TuplaTablaVariables(
-        name= p.ID,
-        type = VarType(p.tipo)
-      )] + p.paramsaux
-
     @_('empty')
-    def varsaux(self, p):
-      return []
+    def vars(self, p): pass
     #END VARS
 
     #START LISTA_ID
@@ -371,11 +336,15 @@ class CalcParser(Parser):
     #END LISTA_ID
 
     #START PROGRAMA
-    @_('PROGRAMA ID ";" vars funciones PRINCIPAL bloque',
-        'PROGRAMA ID ";" vars PRINCIPAL bloque')
+    # @_('PROGRAMA ID ";" set_global_var_scope vars funciones PRINCIPAL bloque',
+    #     'PROGRAMA ID ";" vars PRINCIPAL bloque')
+    @_('PROGRAMA ID ";" set_global_var_scope vars funciones')
     def programa(self, p):
-      func_dir.add_global_vars(p.vars)
       return
+
+    @_('')
+    def set_global_var_scope(self, p):
+      self.action_handler.start_global_var_declaration()
 
     @_('PROGRAMA ID ";" funciones PRINCIPAL bloque',
         'PROGRAMA ID ";" PRINCIPAL bloque')
@@ -401,19 +370,23 @@ if __name__ == '__main__':
     aritmetica = "1 + 2"
 
     no_condicional = "desde C=1 hasta ( 5 > 1 ) hacer {escribe(A+B+C+D+E);}"
-    program = no_condicional
-    print(program)
-    #for a in lexer.tokenize(program):
-      #print(a)
+    modulos = """
+    funcion void test (int: a, int: b)
+    var int: c;
+    var int: d;
+    var int: e;
+    {
+      a = a + 2;
+    }
+    """
+    with open('./examples/main.sarny', 'r') as file:
+      program = file.read()
+      parser.parse(lexer.tokenize(program))
 
-    parser.parse(lexer.tokenize(program))
+      i = 0
+      for q in parser.action_handler.quad_list.quadruples:
+        print(str(i) + ": " + str(q))
+        i+=1
 
-    i = 0
-    for q in parser.action_handler.quad_list.quadruples:
-      print(str(i) + ": " + str(q))
-      i+=1
-
-    for (k, v) in func_dir.dict_funciones.items():
-      print(k)
-      for var in v.vars_table.items():
-        print(var)
+      # for t in parser.action_handler.global_var_table:
+      #   print(t)

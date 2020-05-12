@@ -1,0 +1,29 @@
+programa papito;
+var
+  int k;
+
+
+funcion int fact(float: j)
+var float i;
+var int j;
+{
+  i = 2.1;
+  si (2 == 2) entonces
+  {
+    j = 3;
+  }
+}
+
+funcion int cubo(int: param)
+var int a;
+var int b;
+{
+
+}
+
+funcion int cubo2(int: param2)
+var int aa;
+var int b2;
+{
+  aa = param2 + 1;
+}

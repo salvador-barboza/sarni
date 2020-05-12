@@ -32,8 +32,6 @@ class TuplaDirectorioFunciones:
 
 
 class DirectorioFunciones:
-  global_var_dir = dict()
-
   def __init__(self):
     self.dict_funciones = dict()
 

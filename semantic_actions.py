@@ -1,20 +1,39 @@
 from code_generation.QuadrupleList import QuadrupleList
 from cubosemantico import CuboSemantico
-
+from dirfunciones import TuplaTablaVariables, DirectorioFunciones, VarType
 
 class SemanticActionHandler:
   quad_list = QuadrupleList()
   jump_stack = []
   last_op = ''
   cubo_seman = CuboSemantico()
+  global_var_table = dict()
+  current_local_var_table: dict()
 
+  def resolve_primitive_type(self, s):
+    if (type(s) == int):
+      return 'int'
+    elif(type(s) == float):
+      return 'float'
+    else:
+      var = self.current_local_var_table.get(s)
+      if (var == None):
+        raise Exception('variable {} was not declared in the current scope'.format(s))
+      else:
+        return var.type.value
+
+  #estatutos
   def consume_arithmetic_op(self, op, a, b):
-    if self.cubo_seman.typematch(type(a).__name__,str(op),type(b).__name__) != "error":
+      primitive_a = self.resolve_primitive_type(a)
+      primitive_b = self.resolve_primitive_type(b)
+      result_type = self.cubo_seman.typematch(primitive_a, op, primitive_b)
+      if (not result_type):
+        raise Exception('TYPE MISMATCH. {} and {} should be compatible through {} operation'.format(str(a),str(b),str(op)))
+
       temp_var = self.quad_list.get_next_temp()
       self.quad_list.add_quadd(op, a, b, temp_var)
+      self.current_local_var_table[temp_var] = TuplaTablaVariables(name=temp_var, type=VarType(result_type))
       return temp_var
-    else:
-      raise Exception('TYPE MISMATCH. {} and {} should be compatible through {} operation'.format(str(a),str(b),str(op)))
 
   def consume_relational_op(self, op, a, b):
     temp_var = self.quad_list.get_next_temp()
@@ -22,6 +41,12 @@ class SemanticActionHandler:
     return temp_var
 
   def consume_assignment(self, target, value):
+    primitive_target = self.resolve_primitive_type(target)
+    primitive_value = self.resolve_primitive_type(value)
+
+    if (primitive_target != primitive_value):
+      raise Exception('TYPE MISMATCH. {} can\'t be assigned to {}'.format(primitive_value, primitive_target))
+
     self.quad_list.add_quadd('=', value, -1, target)
 
   def consume_read(self, target):
@@ -70,7 +95,7 @@ class SemanticActionHandler:
       jump_on_false_quad = self.jump_stack.pop()
       self.quad_list.add_quadd('JUMP', -1, -1, jump_on_false_quad)
       self.quad_list.update_target(quad_to_update, self.quad_list.pointer)
-  
+
   def start_for(self):
     self.jump_stack.append(self.quad_list.pointer - 2)
     self.jump_stack.append(self.quad_list.pointer - 1)
@@ -84,3 +109,13 @@ class SemanticActionHandler:
     self.quad_list.add_quadd('+', 1, -1, self.quad_list.quadruples[quad_declared][3])
     self.quad_list.add_quadd('JUMP', -1, -1, jump_on_false_quad)
     self.quad_list.update_target(quad_to_update, cond, None, self.quad_list.pointer)
+
+  # Variables y funciones
+  def start_global_var_declaration(self):
+    self.current_local_var_table = self.global_var_table
+
+  def start_func_scope_var_declaration(self, scope):
+    self.current_local_var_table = dict()
+
+  def add_variable_to_current_scope(self, var: TuplaTablaVariables):
+    self.current_local_var_table[var.name] = var
