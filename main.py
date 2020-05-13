@@ -158,7 +158,7 @@ class CalcParser(Parser):
     # END factor
 
     # START expresion
-    @_('exp')
+    @_('exp', 'llamada_funcion')
     def expresion(self, p): return p[0]
 
     @_('exp "<" exp',
@@ -170,6 +170,31 @@ class CalcParser(Parser):
        'exp "&" exp',
        'exp "|" exp')
     def expresion(self, p): return self.action_handler.consume_relational_op(p[1], p[0], p[2])
+
+
+    @_('verify_function_name args_funcion ")" ";"')
+    def llamada_funcion(self, p):
+      self.action_handler.function_called(p.verify_function_name, p.args_funcion)
+      return p
+
+    @_('ID "("')
+    def verify_function_name(self, p):
+      self.action_handler.verify_function_name(p.ID)
+      return p.ID
+
+    @_('expresion "," args_funcion')
+    def args_funcion(self, p):
+      return [p.expresion] + p.args_funcion
+
+    @_('expresion')
+    def args_funcion(self, p):
+      return [p[0]]
+
+
+    @_('empty')
+    def args_funcion(self, p):
+      return []
+
     #END expresion
 
     #START ESTATUTO
@@ -179,10 +204,12 @@ class CalcParser(Parser):
       'escritura',
       'decision',
       'condicional',
-      'no_condicional'
+      'no_condicional',
+      'llamada_funcion'
     )
     def estatuto(self, p):
       return p[0]
+
     #END ESTATUTO
 
     # START BLOQUE
@@ -270,25 +297,29 @@ class CalcParser(Parser):
 
     @_('"(" VAR tipo ":" ID ")"')
     def params(self, p):
-      return self.action_handler.add_variable_to_current_scope(TuplaTablaVariables(name=p.ID, type=VarType(p.tipo)))
+      return self.action_handler.add_param_to_current_scope(TuplaTablaVariables(name=p.ID, type=VarType(p.tipo)))
 
     @_('"(" tipo ":" ID paramsaux ")"')
     def params(self, p):
-      return self.action_handler.add_variable_to_current_scope(TuplaTablaVariables(name=p.ID, type=VarType(p.tipo)))
+      return self.action_handler.add_param_to_current_scope(TuplaTablaVariables(name=p.ID, type=VarType(p.tipo)))
 
 
     @_('"," tipo ":" ID paramsaux')
     def paramsaux(self, p):
-      return self.action_handler.add_variable_to_current_scope(TuplaTablaVariables(name=p.ID, type=VarType(p.tipo)))
+      return self.action_handler.add_param_to_current_scope(TuplaTablaVariables(name=p.ID, type=VarType(p.tipo)))
 
     @_('empty')
     def paramsaux(self, p): return
     #END PARAMS
 
     #START FUNCIONES
-    @_('function_init params vars bloque funciones_aux')
+    @_('function_init params vars bloque end_funcion_declaration funciones_aux')
     def funciones(self, p):
       return
+
+    @_('empty')
+    def end_funcion_declaration(self, p):
+      self.action_handler.end_function_declaration()
 
     @_('FUNCION funciones_tipo_de_retorno ID')
     def function_init(self, p):
@@ -387,6 +418,3 @@ if __name__ == '__main__':
       for q in parser.action_handler.quad_list.quadruples:
         print(str(i) + ": " + str(q))
         i+=1
-
-      # for t in parser.action_handler.global_var_table:
-      #   print(t)

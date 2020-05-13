@@ -13,11 +13,19 @@ class Operation(Enum):
 class QuadrupleList:
   quadruples = []
   current_temp = 0
+  current_param = 0
   pointer = 0
 
   def get_next_temp(self):
     self.current_temp += 1
     return 't'+str(self.current_temp)
+
+  def get_next_param(self):
+    self.current_param += 1
+    return 'param'+str(self.current_param)
+
+  def reset_params(self):
+    self.current_param = 0
 
   def add_quadd(self, a, b, c, d):
     self.pointer += 1

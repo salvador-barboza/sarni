@@ -9,6 +9,8 @@ class SemanticActionHandler:
   cubo_seman = CuboSemantico()
   global_var_table = dict()
   current_local_var_table: dict()
+  current_scope = None
+  param_table = dict()
 
   def resolve_primitive_type(self, s):
     if (type(s) == int):
@@ -115,7 +117,39 @@ class SemanticActionHandler:
     self.current_local_var_table = self.global_var_table
 
   def start_func_scope_var_declaration(self, scope):
+    self.current_scope = scope
+    self.param_table[scope] = []
     self.current_local_var_table = dict()
 
   def add_variable_to_current_scope(self, var: TuplaTablaVariables):
     self.current_local_var_table[var.name] = var
+
+  def add_param_to_current_scope(self, var: TuplaTablaVariables):
+    self.param_table[self.current_scope].append(var.type.value)
+    self.current_local_var_table[var.name] = var
+
+  def end_function_declaration(self):
+    self.quad_list.add_quadd('ENDFUN', -1, -1, -1)
+
+  def verify_function_name(self, func_name):
+    self.quad_list.reset_params()
+    exists = self.param_table.get(func_name) != None
+    if not exists:
+      raise Exception('Function {} does not exist'.format(func_name))
+    self.quad_list.add_quadd('ERA', -1, -1, func_name)
+
+
+  def function_called(self, func_name, args):
+    func_param_types = self.param_table.get(func_name)
+    arg_count = len(args)
+    expected_param_count = len(func_param_types)
+    if arg_count != expected_param_count:
+      raise Exception('Function {} was supplied {} arguments when {} parameters were declared.'.format(func_name, arg_count, expected_param_count))
+
+    for i in range(0, arg_count):
+      resolved_arg_type = self.resolve_primitive_type(args[i])
+      self.quad_list.add_quadd('PARAM', -1, args[i], self.quad_list.get_next_param())
+      if resolved_arg_type != func_param_types[i]:
+        raise Exception('Expected {}, {} was supplied instead.'.format(func_param_types[i], resolved_arg_type))
+
+    self.quad_list.add_quadd('GOSUB', -1, -1, func_name)
