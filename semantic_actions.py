@@ -27,8 +27,9 @@ class SemanticActionHandler:
       primitive_a = self.resolve_primitive_type(a)
       primitive_b = self.resolve_primitive_type(b)
       result_type = self.cubo_seman.typematch(primitive_a, op, primitive_b)
-      if (not result_type):
-        raise Exception('TYPE MISMATCH. {} and {} should be compatible through {} operation'.format(str(a),str(b),str(op)))
+
+      if (result_type == "error"):
+        raise Exception('TYPE MISMATCH. {}({}) and {}({}) should be compatible through {} operation'.format(str(a),primitive_a,str(b),primitive_b,str(op)))
 
       temp_var = self.quad_list.get_next_temp()
       self.quad_list.add_quadd(op, a, b, temp_var)
@@ -36,6 +37,16 @@ class SemanticActionHandler:
       return temp_var
 
   def consume_relational_op(self, op, a, b):
+    primitive_a = self.resolve_primitive_type(a)
+    primitive_b = self.resolve_primitive_type(b)
+    result_type = self.cubo_seman.typematch(primitive_a, op, primitive_b)
+    print(primitive_a)
+    print(primitive_b)
+    print(result_type)
+
+    if (result_type == "error"):
+      raise Exception('TYPE MISMATCH. {}({}) and {}({}) should be compatible through {} operation'.format(str(a),primitive_a,str(b),primitive_b,str(op)))
+    
     temp_var = self.quad_list.get_next_temp()
     self.quad_list.add_quadd(op, a, b, temp_var)
     return temp_var
