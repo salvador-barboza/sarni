@@ -97,9 +97,9 @@ class CalcLexer(Lexer):
         t.value = int(t.value)
         return t
 
-    @_(r'\'.\'')
+    @_(r"\'.\'")
     def CARACTER(self, t):
-      t.value = t.value[1]
+      t.value = "'" + t.value[1] + "'"
       return t
 
 
@@ -226,7 +226,7 @@ class CalcParser(Parser):
     #END BLOQUE
 
     #START ASIGNACION
-    @_('ID "=" expresion')
+    @_('ID "=" expresion', 'ID "=" CARACTER')
     def asignacion(self, p): return self.action_handler.consume_assignment(p[0], p[2])
     #END ASIGNACION
 
@@ -297,16 +297,16 @@ class CalcParser(Parser):
 
     @_('"(" VAR tipo ":" ID ")"')
     def params(self, p):
-      return self.action_handler.add_param_to_current_scope(TuplaTablaVariables(name=p.ID, type=VarType(p.tipo)))
+      return self.action_handler.add_param_to_current_scope(name=p.ID, tipo=VarType(p.tipo))
 
     @_('"(" tipo ":" ID paramsaux ")"')
     def params(self, p):
-      return self.action_handler.add_param_to_current_scope(TuplaTablaVariables(name=p.ID, type=VarType(p.tipo)))
+      return self.action_handler.add_param_to_current_scope(name=p.ID, tipo=VarType(p.tipo))
 
 
     @_('"," tipo ":" ID paramsaux')
     def paramsaux(self, p):
-      return self.action_handler.add_param_to_current_scope(TuplaTablaVariables(name=p.ID, type=VarType(p.tipo)))
+      return self.action_handler.add_param_to_current_scope(name=p.ID, tipo=VarType(p.tipo))
 
     @_('empty')
     def paramsaux(self, p): return
@@ -345,7 +345,7 @@ class CalcParser(Parser):
     #START VARS
     @_('VAR tipo lista_id ";" vars')
     def vars(self, p):
-      self.action_handler.add_variable_to_current_scope(TuplaTablaVariables(name=p.lista_id, type=VarType(p.tipo)))
+      self.action_handler.add_variable_to_current_scope(name=p.lista_id, tipo=VarType(p.tipo))
       #return
 
     @_('empty')
@@ -418,3 +418,6 @@ if __name__ == '__main__':
       for q in parser.action_handler.quad_list.quadruples:
         print(str(i) + ": " + str(q))
         i+=1
+
+      for q in parser.action_handler.constant_map.items():
+        print(q)

@@ -1,6 +1,7 @@
 from code_generation.QuadrupleList import QuadrupleList
 from cubosemantico import CuboSemantico
 from dirfunciones import TuplaTablaVariables, DirectorioFunciones, VarType
+from memory import VirtualMemoryManager
 
 class SemanticActionHandler:
   quad_list = QuadrupleList()
@@ -9,8 +10,16 @@ class SemanticActionHandler:
   cubo_seman = CuboSemantico()
   global_var_table = dict()
   current_local_var_table: dict()
-  current_scope = None
+  current_scope = 'global'
   param_table = dict()
+  constant_map = dict()
+  virtual_memory_manager = VirtualMemoryManager()
+
+  def resolve_var(self, v):
+      var = self.global_var_table.get(v)
+      if (var == None):
+        var = self.current_local_var_table.get(v)
+      return var
 
   def resolve_primitive_type(self, s):
     if (type(s) == int):
@@ -18,40 +27,83 @@ class SemanticActionHandler:
     elif(type(s) == float):
       return 'float'
     else:
-      var = self.current_local_var_table.get(s)
-      if (var == None):
-        raise Exception('variable {} was not declared in the current scope'.format(s))
-      else:
-        return var.type.value
+      return self.resolve_var(s).type.value
 
-  #estatutos
-  def consume_arithmetic_op(self, op, a, b):
+  def get_addr(self, type):
+    if self.current_scope == 'global':
+      return self.virtual_memory_manager.global_addr.next(type)
+    else:
+      return self.virtual_memory_manager.temp_addr.next(type)
+
+  def resolve_address(self, s):
+    var = self.resolve_var(s)
+    if var != None:
+      return var.addr
+    else:
+      return self.get_or_create_constant_addr(s)
+
+  def get_or_create_constant_addr(self, c):
+    addr = self.constant_map.get(c)
+    if addr == None:
+      var_type = VarType(type(c).__name__)
+      addr = self.virtual_memory_manager.const_addr.next(var_type)
+      self.constant_map[c] = addr
+
+    return addr
+
+  def validate_operation_and_get_result_type(self, op, a, b):
       primitive_a = self.resolve_primitive_type(a)
       primitive_b = self.resolve_primitive_type(b)
+
+      if (primitive_a == None):
+        raise Exception('variable {} was not declared in the current scope'.format(a))
+
+      if (primitive_b == None):
+        raise Exception('variable {} was not declared in the current scope'.format(b))
+
       result_type = self.cubo_seman.typematch(primitive_a, op, primitive_b)
 
       if (result_type == "error"):
         raise Exception('TYPE MISMATCH. {}({}) and {}({}) should be compatible through {} operation'.format(str(a),primitive_a,str(b),primitive_b,str(op)))
 
-      temp_var = self.quad_list.get_next_temp()
-      self.quad_list.add_quadd(op, a, b, temp_var)
-      self.current_local_var_table[temp_var] = TuplaTablaVariables(name=temp_var, type=VarType(result_type))
-      return temp_var
+      return VarType(result_type)
+
+  #estatutos
+  def consume_arithmetic_op(self, op, a, b):
+      result_type = self.validate_operation_and_get_result_type(op, a, b)
+
+      result_temp_var = TuplaTablaVariables(
+        name=self.quad_list.get_next_temp(),
+        type=result_type,
+        addr=self.get_addr(result_type))
+
+      self.current_local_var_table[result_temp_var.name] = result_temp_var
+
+      print(result_temp_var)
+
+      a_addr = self.resolve_address(a)
+      b_addr = self.resolve_address(b)
+
+      self.quad_list.add_quadd(op, a_addr, b_addr, result_temp_var.addr)
+      return result_temp_var.name
 
   def consume_relational_op(self, op, a, b):
-    primitive_a = self.resolve_primitive_type(a)
-    primitive_b = self.resolve_primitive_type(b)
-    result_type = self.cubo_seman.typematch(primitive_a, op, primitive_b)
-    print(primitive_a)
-    print(primitive_b)
-    print(result_type)
+    result_temp_var = TuplaTablaVariables(
+      name=self.quad_list.get_next_temp(),
+      type=VarType.BOOL,
+      addr=self.get_addr(VarType.BOOL))
 
-    if (result_type == "error"):
-      raise Exception('TYPE MISMATCH. {}({}) and {}({}) should be compatible through {} operation'.format(str(a),primitive_a,str(b),primitive_b,str(op)))
-    
-    temp_var = self.quad_list.get_next_temp()
-    self.quad_list.add_quadd(op, a, b, temp_var)
-    return temp_var
+    print(result_temp_var)
+
+    self.current_local_var_table[result_temp_var.name] = result_temp_var
+    a_addr = self.resolve_address(a)
+    b_addr = self.resolve_address(b)
+    print(a, b, a_addr, b_addr)
+
+    self.validate_operation_and_get_result_type(op, a, b)
+
+    self.quad_list.add_quadd(op, a_addr, b_addr, result_temp_var.addr)
+    return result_temp_var.name
 
   def consume_assignment(self, target, value):
     primitive_target = self.resolve_primitive_type(target)
@@ -60,7 +112,10 @@ class SemanticActionHandler:
     if (primitive_target != primitive_value):
       raise Exception('TYPE MISMATCH. {} can\'t be assigned to {}'.format(primitive_value, primitive_target))
 
-    self.quad_list.add_quadd('=', value, -1, target)
+    a_addr = self.resolve_address(target)
+    b_addr = self.resolve_address(value)
+
+    self.quad_list.add_quadd('=', a_addr, -1, b_addr)
 
   def consume_read(self, target):
     self.quad_list.add_quadd('READ', -1, -1, target)
@@ -74,7 +129,11 @@ class SemanticActionHandler:
 
   def end_if(self, cond):
     quad_to_update = self.jump_stack.pop()
-    self.quad_list.update_target(quad_to_update, cond, None, self.quad_list.pointer)
+
+    a_addr = self.resolve_address(cond)
+    b_addr = self.resolve_address(self.quad_list.pointer)
+
+    self.quad_list.update_target(quad_to_update, a_addr, None, b_addr)
 
   def start_else(self):
     self.quad_list.add_quadd('JUMP', -1, -1, -1)
@@ -132,12 +191,17 @@ class SemanticActionHandler:
     self.param_table[scope] = []
     self.current_local_var_table = dict()
 
-  def add_variable_to_current_scope(self, var: TuplaTablaVariables):
-    self.current_local_var_table[var.name] = var
 
-  def add_param_to_current_scope(self, var: TuplaTablaVariables):
-    self.param_table[self.current_scope].append(var.type.value)
-    self.current_local_var_table[var.name] = var
+  def add_variable_to_current_scope(self, name, tipo):
+    var_type = VarType(tipo)
+    addr = self.get_addr(var_type)
+    self.current_local_var_table[name] = TuplaTablaVariables(name=name, type=var_type, addr=addr)
+
+  def add_param_to_current_scope(self, name, tipo):
+    var_type = VarType(tipo)
+    addr = self.get_addr(var_type)
+    self.param_table[self.current_scope].append(var_type.value)
+    self.current_local_var_table[name] = TuplaTablaVariables(name=name, type=var_type, addr=addr)
 
   def end_function_declaration(self):
     self.quad_list.add_quadd('ENDFUN', -1, -1, -1)
@@ -159,7 +223,8 @@ class SemanticActionHandler:
 
     for i in range(0, arg_count):
       resolved_arg_type = self.resolve_primitive_type(args[i])
-      self.quad_list.add_quadd('PARAM', -1, args[i], self.quad_list.get_next_param())
+      value_addr = self.resolve_address(args[i])
+      self.quad_list.add_quadd('PARAM', -1, value_addr, self.quad_list.get_next_param())
       if resolved_arg_type != func_param_types[i]:
         raise Exception('Expected {}, {} was supplied instead.'.format(func_param_types[i], resolved_arg_type))
 

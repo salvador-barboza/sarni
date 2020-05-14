@@ -5,6 +5,7 @@ class VarType(Enum):
   INT = 'int'
   CHAR = 'char'
   FLOAT = 'float'
+  BOOL = 'bool'
 
 class ReturnType(Enum):
   VOID = 'void'
@@ -16,6 +17,7 @@ class ReturnType(Enum):
 class TuplaTablaVariables:
     name: str
     type: VarType
+    addr: int
 
 @dataclass
 class TuplaDirectorioFunciones:
