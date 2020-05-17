@@ -387,9 +387,19 @@ class CalcParser(Parser):
     #END LISTA_ID
 
     #START PROGRAMA
-    # @_('PROGRAMA ID ";" set_global_var_scope vars funciones PRINCIPAL bloque',
-    #     'PROGRAMA ID ";" vars PRINCIPAL bloque')
     @_('PROGRAMA ID ";" set_global_var_scope vars funciones PRINCIPAL bloque')
+    def programa(self, p):
+      return
+
+    @_('PROGRAMA ID ";" set_global_var_scope funciones PRINCIPAL bloque')
+    def programa(self, p):
+      return
+    
+    @_('PROGRAMA ID ";" set_global_var_scope vars PRINCIPAL bloque')
+    def programa(self, p):
+      return
+    
+    @_('PROGRAMA ID ";" set_global_var_scope PRINCIPAL bloque')
     def programa(self, p):
       return
 
@@ -397,10 +407,6 @@ class CalcParser(Parser):
     def set_global_var_scope(self, p):
       self.action_handler.start_global_var_declaration()
 
-    #@_('PROGRAMA ID ";" funciones PRINCIPAL bloque',
-        #'PROGRAMA ID ";" PRINCIPAL bloque')
-    #def programa(self, p):
-      #return
     #END PROGRAMA
 
     #START EMPTY
