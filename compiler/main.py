@@ -112,7 +112,6 @@ class CalcLexer(Lexer):
         self.index += 1
 
 
-from quadruple_list import QuadrupleList
 
 class CalcParser(Parser):
     tokens = CalcLexer.tokens
@@ -217,7 +216,7 @@ class CalcParser(Parser):
     def bloque(self, p):
       return #p[1]
 
-    
+
     @_('"{" bloqueaux REGRESA exp ";" "}"')
     def bloque(self, p):
       return p[3]
@@ -363,11 +362,11 @@ class CalcParser(Parser):
     @_(' lista_id  "," lista_id_aux')
     def lista_id_aux(self, p):
       return [p.lista_id] + p.lista_id_aux
-      
+
     @_(' lista_id')
     def lista_id_aux(self, p):
       return [p[0]]
-    
+
     @_('empty')
     def lista_id_aux(self, p):
       return []
@@ -398,11 +397,11 @@ class CalcParser(Parser):
     @_('PROGRAMA jump_principal ID ";" set_global_var_scope funciones PRINCIPAL upd_principal bloque')
     def programa(self, p):
       return
-    
+
     @_('PROGRAMA jump_principal ID ";" set_global_var_scope vars PRINCIPAL upd_principal bloque')
     def programa(self, p):
       return
-    
+
     @_('PROGRAMA jump_principal ID ";" set_global_var_scope PRINCIPAL upd_principal bloque')
     def programa(self, p):
       return
@@ -414,7 +413,7 @@ class CalcParser(Parser):
     @_('empty')
     def jump_principal(self, p):
       self.action_handler.first_quad()
-    
+
     @_('empty')
     def upd_principal(self, p):
       self.action_handler.principal()
@@ -426,7 +425,8 @@ class CalcParser(Parser):
       pass
     #END EMPTY
 
-
+from output_marshaling import CompilerOutput, write_compiler_output
+import sys
 
 if __name__ == '__main__':
     lexer = CalcLexer()
@@ -447,6 +447,15 @@ if __name__ == '__main__':
       a = a + 2;
     }
     """
-    with open('./examples/main1.sarny', 'r') as file:
+
+    with open(sys.argv[1], 'r') as file:
       program = file.read()
       parser.parse(lexer.tokenize(program))
+
+      output = CompilerOutput(
+        quadruples = parser.action_handler.quad_list.quadruples,
+        constants = parser.action_handler.constant_map,
+        func_dir = parser.action_handler.param_table
+      )
+
+      write_compiler_output(output, sys.argv[2])

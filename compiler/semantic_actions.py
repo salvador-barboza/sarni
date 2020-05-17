@@ -1,4 +1,4 @@
-from quadruple_list import QuadrupleList
+from quadruplelist import QuadrupleList
 from cubosemantico import CuboSemantico
 from dirfunciones import TuplaTablaVariables, DirectorioFunciones, VarType, TuplaDirectorioFunciones
 from memory import VirtualMemoryManager
@@ -243,12 +243,12 @@ class SemanticActionHandler:
   def first_quad(self):
     self.quad_list.add_quadd('JUMP', -1, -1, 'MAIN')
     self.jump_stack.append(self.quad_list.pointer - 1)
-  
+
   def principal(self):
     quad_to_update = self.jump_stack.pop()
     b_addr = self.resolve_address(self.quad_list.pointer)
     self.quad_list.update_target(quad_to_update, None, None, b_addr)
-  
+
   def func_return(self, scope, value):
     ########################
     print("regrese")
@@ -257,7 +257,7 @@ class SemanticActionHandler:
       return_value = None
     else:
       return_value = self.resolve_primitive_type(value)
-    
+
     print(expected_type)
     print(return_value)
     print("--------------------------")
