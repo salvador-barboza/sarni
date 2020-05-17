@@ -1,4 +1,4 @@
-from code_generation.QuadrupleList import QuadrupleList
+from quadruple_list import QuadrupleList
 from cubosemantico import CuboSemantico
 from dirfunciones import TuplaTablaVariables, DirectorioFunciones, VarType, TuplaDirectorioFunciones
 from memory import VirtualMemoryManager

@@ -17,8 +17,9 @@ var int j;
 funcion int cubo(int: param, int: param2)
 var int a;
 var int b;
+var char c;
 {
-  fact(2.0+4.0);
+  fact(2.1 + 2.10);
 }
 
 funcion int cubo2(int: param2)

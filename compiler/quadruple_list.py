@@ -1,6 +1,6 @@
 from enum import Enum
 from typing import List
-from statements.Statement import ArithmeticExpr
+import pickle
 
 class Operation(Enum):
   SUM = 'int'
@@ -35,4 +35,9 @@ class QuadrupleList:
     old_tuple = self.quadruples[dir]
     new_tuple = (old_tuple[0], a or old_tuple[1], b or old_tuple[2], c or old_tuple[3])
     self.quadruples[dir] = new_tuple
+
+  def persist(self, output_dest):
+    outfile = open(output_dest, 'wb')
+    pickle.dump(self.quadruples, outfile)
+    outfile.close()
 

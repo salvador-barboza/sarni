@@ -112,7 +112,7 @@ class CalcLexer(Lexer):
         self.index += 1
 
 
-from code_generation.QuadrupleList import QuadrupleList
+from quadruple_list import QuadrupleList
 
 class CalcParser(Parser):
     tokens = CalcLexer.tokens
@@ -450,11 +450,3 @@ if __name__ == '__main__':
     with open('./examples/main1.sarny', 'r') as file:
       program = file.read()
       parser.parse(lexer.tokenize(program))
-
-      i = 0
-      for q in parser.action_handler.quad_list.quadruples:
-        print(str(i) + ": " + str(q))
-        i+=1
-
-      for q in parser.action_handler.constant_map.items():
-        print(q)
