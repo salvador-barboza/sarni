@@ -23,14 +23,14 @@ class TuplaTablaVariables:
 class TuplaDirectorioFunciones:
     name: str
     return_type: ReturnType
-    vars_table: dict
+    param_table: list
 
-    def add_var(self, tupla: TuplaTablaVariables):
-      self.vars_table[tupla.name] = tupla
+    #def add_var(self, tupla: TuplaTablaVariables):
+      #self.vars_table[tupla.name] = tupla
 
-    def add_vars(self, tuplas: list):
-      for t in tuplas:
-        self.add_var(t)
+    #def add_vars(self, tuplas: list):
+      #for t in tuplas:
+        #self.add_var(t)
 
 
 class DirectorioFunciones:

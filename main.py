@@ -315,11 +315,11 @@ class CalcParser(Parser):
 
     @_('empty')
     def end_funcion_declaration(self, p):
-      self.action_handler.end_function_declaration()
+      self.action_handler.end_function_declaration(p[-1])
 
     @_('FUNCION funciones_tipo_de_retorno ID')
     def function_init(self, p):
-      self.action_handler.start_func_scope_var_declaration(p.ID)
+      self.action_handler.start_func_scope_var_declaration(p.funciones_tipo_de_retorno, p.ID)
 
     @_('tipo',
       'VOID')
@@ -383,19 +383,19 @@ class CalcParser(Parser):
     #END LISTA_ID
 
     #START PROGRAMA
-    @_('PROGRAMA ID ";" set_global_var_scope vars funciones PRINCIPAL bloque')
+    @_('PROGRAMA jump_principal ID ";" set_global_var_scope vars funciones PRINCIPAL upd_principal bloque')
     def programa(self, p):
       return
 
-    @_('PROGRAMA ID ";" set_global_var_scope funciones PRINCIPAL bloque')
+    @_('PROGRAMA jump_principal ID ";" set_global_var_scope funciones PRINCIPAL upd_principal bloque')
     def programa(self, p):
       return
     
-    @_('PROGRAMA ID ";" set_global_var_scope vars PRINCIPAL bloque')
+    @_('PROGRAMA jump_principal ID ";" set_global_var_scope vars PRINCIPAL upd_principal bloque')
     def programa(self, p):
       return
     
-    @_('PROGRAMA ID ";" set_global_var_scope PRINCIPAL bloque')
+    @_('PROGRAMA jump_principal ID ";" set_global_var_scope PRINCIPAL upd_principal bloque')
     def programa(self, p):
       return
 
@@ -403,6 +403,13 @@ class CalcParser(Parser):
     def set_global_var_scope(self, p):
       self.action_handler.start_global_var_declaration()
 
+    @_('empty')
+    def jump_principal(self, p):
+      self.action_handler.first_quad()
+    
+    @_('empty')
+    def upd_principal(self, p):
+      self.action_handler.principal()
     #END PROGRAMA
 
     #START EMPTY

@@ -1,6 +1,6 @@
 from code_generation.QuadrupleList import QuadrupleList
 from cubosemantico import CuboSemantico
-from dirfunciones import TuplaTablaVariables, DirectorioFunciones, VarType
+from dirfunciones import TuplaTablaVariables, DirectorioFunciones, VarType, TuplaDirectorioFunciones
 from memory import VirtualMemoryManager
 
 class SemanticActionHandler:
@@ -186,10 +186,23 @@ class SemanticActionHandler:
   def start_global_var_declaration(self):
     self.current_local_var_table = self.global_var_table
 
-  def start_func_scope_var_declaration(self, scope):
+  def start_func_scope_var_declaration(self, return_t, scope):
     self.current_scope = scope
-    self.param_table[scope] = []
+    #self.param_table[scope] = []
+    self.param_table[scope] = TuplaDirectorioFunciones(name=scope, return_type=return_t, param_table=[])
     self.current_local_var_table = dict()
+
+    if(return_t != 'void'):
+      var_func = "var_func_" + scope
+      self.current_scope = 'global'
+      addr = self.get_addr(VarType(return_t))
+      self.current_scope = scope
+      self.global_var_table[var_func] = TuplaTablaVariables(name=var_func, type=return_t, addr=addr)
+    
+    #######################################
+    print("param")
+    print(self.global_var_table)
+    print("termino")
 
 
   def add_variable_to_current_scope(self, tipo, args):
@@ -202,24 +215,32 @@ class SemanticActionHandler:
   def add_param_to_current_scope(self, name, tipo):
     var_type = VarType(tipo)
     addr = self.get_addr(var_type)
-    self.param_table[self.current_scope].append(var_type.value)
+    self.param_table[self.current_scope].param_table.append(var_type.value)
     self.current_local_var_table[name] = TuplaTablaVariables(name=name, type=var_type, addr=addr)
 
-  def end_function_declaration(self):
+  def end_function_declaration(self, bloque):
+    ####################################
+    print("antes de bloque")
+    print(bloque)
+    print("despues de bloque")
     self.quad_list.add_quadd('ENDFUN', -1, -1, -1)
 
   def verify_function_name(self, func_name):
     self.quad_list.reset_params()
-    exists = self.param_table.get(func_name) != None
+    exists = self.param_table.get(func_name).name != None
     if not exists:
       raise Exception('Function {} does not exist'.format(func_name))
     self.quad_list.add_quadd('ERA', -1, -1, func_name)
 
 
   def function_called(self, func_name, args):
-    func_param_types = self.param_table.get(func_name)
+    func_param_types = self.param_table.get(func_name).param_table
     arg_count = len(args)
     expected_param_count = len(func_param_types)
+    ##########################################
+    print("aqui")
+    print(self.param_table)
+    print("terminoooo")
     if arg_count != expected_param_count:
       raise Exception('Function {} was supplied {} arguments when {} parameters were declared.'.format(func_name, arg_count, expected_param_count))
 
@@ -231,3 +252,12 @@ class SemanticActionHandler:
         raise Exception('Expected {}, {} was supplied instead.'.format(func_param_types[i], resolved_arg_type))
 
     self.quad_list.add_quadd('GOSUB', -1, -1, func_name)
+
+  def first_quad(self):
+    self.quad_list.add_quadd('JUMP', -1, -1, 'MAIN')
+    self.jump_stack.append(self.quad_list.pointer - 1)
+  
+  def principal(self):
+    quad_to_update = self.jump_stack.pop()
+    b_addr = self.resolve_address(self.quad_list.pointer)
+    self.quad_list.update_target(quad_to_update, None, None, b_addr)
