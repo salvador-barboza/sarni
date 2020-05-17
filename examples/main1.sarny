@@ -11,9 +11,10 @@ var float i;
   {
     j = 3.0;
   }
+  regresa 1;
 }
 
-funcion int cubo(int param, int param2)
+funcion void cubo(int param, int param2)
 var int a, b;
 {
   fact(2.0+4.0);
@@ -24,6 +25,7 @@ var int aa, b2;
 {
   aa = param2 + 1;
   cubo(aa, b2+2);
+  regresa 1;
 }
 
 principal(){

@@ -215,7 +215,12 @@ class CalcParser(Parser):
     # START BLOQUE
     @_('"{" bloqueaux "}"')
     def bloque(self, p):
-      return p[1]
+      return #p[1]
+
+    
+    @_('"{" bloqueaux REGRESA exp ";" "}"')
+    def bloque(self, p):
+      return p[3]
 
 
     @_('empty',
@@ -311,15 +316,18 @@ class CalcParser(Parser):
     #START FUNCIONES
     @_('function_init params vars bloque end_funcion_declaration funciones_aux')
     def funciones(self, p):
+      self.action_handler.func_return(p.function_init, p.bloque)
+
       return
 
     @_('empty')
     def end_funcion_declaration(self, p):
-      self.action_handler.end_function_declaration(p[-1])
+      self.action_handler.end_function_declaration()
 
     @_('FUNCION funciones_tipo_de_retorno ID')
     def function_init(self, p):
       self.action_handler.start_func_scope_var_declaration(p.funciones_tipo_de_retorno, p.ID)
+      return p.ID
 
     @_('tipo',
       'VOID')

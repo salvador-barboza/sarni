@@ -198,12 +198,6 @@ class SemanticActionHandler:
       addr = self.get_addr(VarType(return_t))
       self.current_scope = scope
       self.global_var_table[var_func] = TuplaTablaVariables(name=var_func, type=return_t, addr=addr)
-    
-    #######################################
-    print("param")
-    print(self.global_var_table)
-    print("termino")
-
 
   def add_variable_to_current_scope(self, tipo, args):
     var_type = VarType(tipo)
@@ -218,11 +212,7 @@ class SemanticActionHandler:
     self.param_table[self.current_scope].param_table.append(var_type.value)
     self.current_local_var_table[name] = TuplaTablaVariables(name=name, type=var_type, addr=addr)
 
-  def end_function_declaration(self, bloque):
-    ####################################
-    print("antes de bloque")
-    print(bloque)
-    print("despues de bloque")
+  def end_function_declaration(self):
     self.quad_list.add_quadd('ENDFUN', -1, -1, -1)
 
   def verify_function_name(self, func_name):
@@ -237,10 +227,7 @@ class SemanticActionHandler:
     func_param_types = self.param_table.get(func_name).param_table
     arg_count = len(args)
     expected_param_count = len(func_param_types)
-    ##########################################
-    print("aqui")
-    print(self.param_table)
-    print("terminoooo")
+
     if arg_count != expected_param_count:
       raise Exception('Function {} was supplied {} arguments when {} parameters were declared.'.format(func_name, arg_count, expected_param_count))
 
@@ -261,3 +248,23 @@ class SemanticActionHandler:
     quad_to_update = self.jump_stack.pop()
     b_addr = self.resolve_address(self.quad_list.pointer)
     self.quad_list.update_target(quad_to_update, None, None, b_addr)
+  
+  def func_return(self, scope, value):
+    ########################
+    print("regrese")
+    expected_type = self.param_table[scope].return_type
+    if value == None:
+      return_value = None
+    else:
+      return_value = self.resolve_primitive_type(value)
+    
+    print(expected_type)
+    print(return_value)
+    print("--------------------------")
+    if expected_type != 'void':
+      if return_value == None:
+        raise Exception('{} function should return a value.'.format(expected_type))
+      elif expected_type != return_value:
+        raise Exception('TYPE MISMATCH. {} can\'t be assigned to {} function'.format(return_value,expected_type))
+    elif return_value != None:
+      raise Exception('Void function can not return a value.')
