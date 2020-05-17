@@ -2,7 +2,7 @@ programa papito;
 var
   int k;
 
-funcion int fact(float: j)
+funcion int fact(float j)
 var float i;
     int jj;
 {
@@ -13,13 +13,13 @@ var float i;
   }
 }
 
-funcion int cubo(int: param, int: param2)
+funcion int cubo(int param, int param2)
 var int a, b;
 {
   fact(2.0+4.0);
 }
 
-funcion int cubo2(int: param2)
+funcion int cubo2(int param2)
 var int aa, b2;
 {
   aa = param2 + 1;

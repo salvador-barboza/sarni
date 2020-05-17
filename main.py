@@ -295,16 +295,12 @@ class CalcParser(Parser):
     def params(self, p):
       return []
 
-    @_('"(" VAR tipo ":" ID ")"')
-    def params(self, p):
-      return self.action_handler.add_param_to_current_scope(name=p.ID, tipo=VarType(p.tipo))
-
-    @_('"(" tipo ":" ID paramsaux ")"')
+    @_('"(" tipo ID paramsaux ")"')
     def params(self, p):
       return self.action_handler.add_param_to_current_scope(name=p.ID, tipo=VarType(p.tipo))
 
 
-    @_('"," tipo ":" ID paramsaux')
+    @_('"," tipo ID paramsaux')
     def paramsaux(self, p):
       return self.action_handler.add_param_to_current_scope(name=p.ID, tipo=VarType(p.tipo))
 
