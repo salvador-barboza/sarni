@@ -343,10 +343,30 @@ class CalcParser(Parser):
     #END TIPO
 
     #START VARS
-    @_('VAR tipo lista_id ";" vars')
-    def vars(self, p):
-      self.action_handler.add_variable_to_current_scope(name=p.lista_id, tipo=VarType(p.tipo))
-      #return
+    @_('VAR varios_tipos')
+    def vars(self, p): pass
+
+    @_('declaracion varios_tipos')
+    def varios_tipos(self, p): pass
+
+    @_('empty')
+    def varios_tipos(self, p): pass
+
+    @_('tipo lista_id_aux ";"')
+    def declaracion(self, p):
+      self.action_handler.add_variable_to_current_scope(tipo=VarType(p.tipo), args=p.lista_id_aux)
+
+    @_(' lista_id  "," lista_id_aux')
+    def lista_id_aux(self, p):
+      return [p.lista_id] + p.lista_id_aux
+      
+    @_(' lista_id')
+    def lista_id_aux(self, p):
+      return [p[0]]
+    
+    @_('empty')
+    def lista_id_aux(self, p):
+      return []
 
     @_('empty')
     def vars(self, p): pass
@@ -369,7 +389,7 @@ class CalcParser(Parser):
     #START PROGRAMA
     # @_('PROGRAMA ID ";" set_global_var_scope vars funciones PRINCIPAL bloque',
     #     'PROGRAMA ID ";" vars PRINCIPAL bloque')
-    @_('PROGRAMA ID ";" set_global_var_scope vars funciones')
+    @_('PROGRAMA ID ";" set_global_var_scope vars funciones PRINCIPAL bloque')
     def programa(self, p):
       return
 
@@ -377,10 +397,10 @@ class CalcParser(Parser):
     def set_global_var_scope(self, p):
       self.action_handler.start_global_var_declaration()
 
-    @_('PROGRAMA ID ";" funciones PRINCIPAL bloque',
-        'PROGRAMA ID ";" PRINCIPAL bloque')
-    def programa(self, p):
-      return
+    #@_('PROGRAMA ID ";" funciones PRINCIPAL bloque',
+        #'PROGRAMA ID ";" PRINCIPAL bloque')
+    #def programa(self, p):
+      #return
     #END PROGRAMA
 
     #START EMPTY
@@ -410,7 +430,7 @@ if __name__ == '__main__':
       a = a + 2;
     }
     """
-    with open('./examples/main.sarny', 'r') as file:
+    with open('./examples/main1.sarny', 'r') as file:
       program = file.read()
       parser.parse(lexer.tokenize(program))
 

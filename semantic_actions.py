@@ -192,10 +192,12 @@ class SemanticActionHandler:
     self.current_local_var_table = dict()
 
 
-  def add_variable_to_current_scope(self, name, tipo):
+  def add_variable_to_current_scope(self, tipo, args):
     var_type = VarType(tipo)
-    addr = self.get_addr(var_type)
-    self.current_local_var_table[name] = TuplaTablaVariables(name=name, type=var_type, addr=addr)
+    arg_count = len(args)
+    for i in range(0,arg_count):
+      addr = self.get_addr(var_type)
+      self.current_local_var_table[args[i]] = TuplaTablaVariables(name=args[i], type=var_type, addr=addr)
 
   def add_param_to_current_scope(self, name, tipo):
     var_type = VarType(tipo)
