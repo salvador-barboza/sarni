@@ -9,7 +9,7 @@ var float i;
   i = 2.1;
   si (2 == 2) entonces
   {
-    j = 3.0;
+    j = 30.0;
   }
   regresa 1;
 }
@@ -29,5 +29,9 @@ var int aa, b2;
 }
 
 principal(){
-  
+  k = 50;
+  escribe((2+2-3)*10);
+  escribe((2+2-3)*10);
+  escribe((2+2-3)*10);
+  escribe(10*k-1);
 }

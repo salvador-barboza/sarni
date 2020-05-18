@@ -112,16 +112,18 @@ class SemanticActionHandler:
     if (primitive_target != primitive_value):
       raise Exception('TYPE MISMATCH. {} can\'t be assigned to {}'.format(primitive_value, primitive_target))
 
-    a_addr = self.resolve_address(target)
-    b_addr = self.resolve_address(value)
+    a_addr = self.resolve_address(value)
+    b_addr = self.resolve_address(target)
 
     self.quad_list.add_quadd('=', a_addr, -1, b_addr)
 
   def consume_read(self, target):
-    self.quad_list.add_quadd('READ', -1, -1, target)
+    addr = self.resolve_address(target)
+    self.quad_list.add_quadd('READ', -1, -1, addr)
 
   def consume_write(self, value):
-    self.quad_list.add_quadd('WRITE', -1, -1, value)
+    addr = self.resolve_address(value)
+    self.quad_list.add_quadd('WRITE', -1, -1, addr)
 
   def start_if(self):
     self.quad_list.add_quadd('JUMPF', -1, -1, -1)
@@ -246,8 +248,7 @@ class SemanticActionHandler:
 
   def principal(self):
     quad_to_update = self.jump_stack.pop()
-    b_addr = self.resolve_address(self.quad_list.pointer)
-    self.quad_list.update_target(quad_to_update, None, None, b_addr)
+    self.quad_list.update_target(quad_to_update, None, None, self.quad_list.pointer)
 
   def func_return(self, scope, value):
     ########################
