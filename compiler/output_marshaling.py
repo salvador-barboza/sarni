@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from dirfunciones import TuplaDirectorioFunciones
+from compiler.dirfunciones import TuplaDirectorioFunciones
 import pickle
 
 @dataclass
@@ -15,7 +15,7 @@ def write_compiler_output(output, destination):
   outfile.close()
 
 def read_compiler_output(source):
-  inputfile = open(source, 'r')
+  inputfile = open(source, 'rb')
   data: CompilerOutput = pickle.load(inputfile)
   inputfile.close()
   return data

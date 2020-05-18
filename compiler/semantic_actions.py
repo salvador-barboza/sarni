@@ -1,7 +1,7 @@
-from quadruplelist import QuadrupleList
-from cubosemantico import CuboSemantico
-from dirfunciones import TuplaTablaVariables, DirectorioFunciones, VarType, TuplaDirectorioFunciones
-from memory import VirtualMemoryManager
+from compiler.quadruplelist import QuadrupleList
+from compiler.cubosemantico import CuboSemantico
+from compiler.dirfunciones import TuplaTablaVariables, DirectorioFunciones, VarType, TuplaDirectorioFunciones
+from compiler.memory import VirtualMemoryManager
 
 class SemanticActionHandler:
   quad_list = QuadrupleList()

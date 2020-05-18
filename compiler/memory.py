@@ -1,4 +1,4 @@
-from dirfunciones import VarType
+from compiler.dirfunciones import VarType
 
 class MemoryBlock:
   def __init__(self, chunk_size, start):
