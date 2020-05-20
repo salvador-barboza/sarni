@@ -190,6 +190,7 @@ class SemanticActionHandler:
       name=scope,
       return_type=return_t,
       param_table=[],
+      param_pointers=[],
       local_variable_count = 0,
       start_pointer=self.quad_list.pointer+1)
     self.current_local_var_table = dict()
@@ -212,10 +213,12 @@ class SemanticActionHandler:
     var_type = VarType(tipo)
     addr = self.get_addr(var_type, scope=self.current_scope)
     self.param_table[self.current_scope].param_table.append(var_type.value)
+    self.param_table[self.current_scope].param_pointers.append(addr)
     self.current_local_var_table[name] = TuplaTablaVariables(name=name, type=var_type, addr=addr)
 
   def end_function_declaration(self):
     self.quad_list.add_quadd('ENDFUN', -1, -1, -1)
+    self.virtual_memory_manager.clear_temp()
 
   def verify_function_name(self, func_name):
     self.quad_list.reset_params()
@@ -227,22 +230,22 @@ class SemanticActionHandler:
 
   def function_called(self, func_name, args):
     func_param_types = self.param_table.get(func_name).param_table
+    func_param_pointers = self.param_table.get(func_name).param_pointers
     arg_count = len(args)
     expected_param_count = len(func_param_types)
 
     if arg_count != expected_param_count:
       raise Exception('Function {} was supplied {} arguments when {} parameters were declared.'.format(func_name, arg_count, expected_param_count))
 
-    return 'var_func_' + func_name
-
     for i in range(0, arg_count):
       resolved_arg_type = self.resolve_primitive_type(args[i])
       value_addr = self.resolve_address(args[i])
-      self.quad_list.add_quadd('PARAM', -1, value_addr, self.quad_list.get_next_param())
+      self.quad_list.add_quadd('PARAM', -1, value_addr, func_param_pointers[i])
       if resolved_arg_type != func_param_types[i]:
         raise Exception('Expected {}, {} was supplied instead.'.format(func_param_types[i], resolved_arg_type))
 
     self.quad_list.add_quadd('GOSUB', -1, -1, func_name)
+    return 'var_func_' + func_name
 
   def first_quad(self):
     self.quad_list.add_quadd('JUMP', -1, -1, 'MAIN')

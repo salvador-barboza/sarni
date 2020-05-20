@@ -1,37 +1,23 @@
 programa papito;
 var
-  int k;
+  int W, J;
 
-funcion int fact(float j)
-var float i;
-    int jj;
+funcion int suma(int i, int j)
 {
-  i = 2.1;
-  si (2 == 2) entonces
-  {
-    j = 30.0;
-  }
-  regresa 1;
+  regresa i + j;
 }
 
-funcion void cubo(int param, int param2)
-var int a, b;
+funcion int suma3(int i, int j, int k)
 {
-  fact(2.0+4.0);
+  regresa k * k;
 }
 
-funcion int cubo2(int param2)
-var int aa, b2;
-{
-  aa = param2 + 1;
-  cubo(aa, b2+2);
-  regresa 1;
-}
 
-principal(){
-  k = 50;
-  escribe((2+2-3)*10);
-  escribe((2+2-3)*10);
-  escribe((2+2-3)*10);
-  escribe(10*k-1);
+
+principal() {
+  J = 2;
+  W = suma(2, J);
+  escribe(W);
+  W = suma3(100, W, 10);
+  escribe(W);
 }

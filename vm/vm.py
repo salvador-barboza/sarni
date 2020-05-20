@@ -1,10 +1,18 @@
 from vm.memory import MemoryBlock
+from dataclasses import dataclass
+
+@dataclass
+class Frame:
+  IP: int
+  params: dict
+
+
 
 class VM:
   global_memory = MemoryBlock(start=0, size=6000)
   temp_memory = MemoryBlock(start=6000, size=6000)
-
-  IP = 0
+  frames = [Frame(IP=0, params=dict())]
+  next_frame = None
 
   def __init__(self, quads, constants, func_dir):
     self.quads = quads
@@ -21,48 +29,72 @@ class VM:
       print(str(i) + str(quad))
       i+=1
 
-
   def run(self):
     print("Inicio:")
-    while self.IP < len(self.quads):
+    while self.get_current_frame().IP < len(self.quads):
       self.next_instruction()
 
   def next_instruction(self):
-    (instruction, A, B, C) = self.quads[self.IP]
+    frame = self.get_current_frame()
+    (instruction, A, B, C) = self.quads[frame.IP]
+
     if instruction == '+':
       self.write(C, self.read(A) + self.read(B))
-      self.IP += 1
     elif instruction == '-':
       self.write(C, self.read(A) - self.read(B))
-      self.IP += 1
     elif instruction == '*':
       self.write(C, self.read(A) * self.read(B))
-      self.IP += 1
     elif instruction == '/':
       self.write(C, self.read(A) / self.read(B))
-      self.IP += 1
     elif instruction == '=':
       self.write(C, self.read(A))
-      self.IP += 1
     elif instruction == '==':
       self.write(C, self.read(A) == self.read(B))
-      self.IP += 1
     elif instruction == '<':
       self.write(C, self.read(A) < self.read(B))
-      self.IP += 1
     elif instruction == '>':
       self.write(C, self.read(A) > self.read(B))
-      self.IP += 1
     elif instruction == 'WRITE':
       print(self.read(C))
-      self.IP += 1
     elif instruction == 'JUMP':
-      self.IP = C
+      frame.IP = C
       return
     elif instruction == 'JUMPF':
       if self.read(C) == False:
-        self.IP = C
+        frame.IP = C
         return
+    elif instruction == 'ERA':
+      self.start_new_frame(self.func_dir[C].start_pointer-1)
+    elif instruction == 'PARAM':
+      self.next_frame.params[C] = self.read(B)
+      self.write(C, self.read(B))
+    elif instruction == 'GOSUB':
+      frame.IP+=1
+      self.switch_to_new_frame()
+      return
+    elif instruction == 'RETURN':
+      self.restore_past_frame()
+      return
+
+    frame.IP+=1
+
+
+
+  def get_current_frame(self):
+    return self.frames[len(self.frames) - 1]
+
+  def start_new_frame(self, IP):
+    self.next_frame = Frame(IP=IP, params=dict())
+
+  def switch_to_new_frame(self):
+    self.frames.append(self.next_frame)
+    self.next_frame = None
+
+  def restore_past_frame(self):
+    self.frames.pop()
+    for (direct, value) in self.get_current_frame().params.items():
+      self.write(direct, value)
+
 
 
   def write(self, direct, value):

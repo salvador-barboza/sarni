@@ -20,10 +20,6 @@ class QuadrupleList:
     self.current_temp += 1
     return 't'+str(self.current_temp)
 
-  def get_next_param(self):
-    self.current_param += 1
-    return 'param'+str(self.current_param)
-
   def reset_params(self):
     self.current_param = 0
 
