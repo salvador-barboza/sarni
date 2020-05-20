@@ -27,7 +27,9 @@ class SemanticActionHandler:
     elif(type(s) == float):
       return 'float'
     else:
-      return self.resolve_var(s).type.value
+      var_type = self.resolve_var(s)
+      if (var_type != None):
+        return var_type.type.value
 
   def get_addr(self, type, scope):
     if scope == 'global':
