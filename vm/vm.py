@@ -18,8 +18,8 @@ class VM:
 
     i = 0
     for quad in self.quads:
-      i+=1
       print(str(i) + str(quad))
+      i+=1
 
 
   def run(self):

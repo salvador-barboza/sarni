@@ -280,23 +280,11 @@ class CalcParser(Parser):
     #END LISTA_ID
 
     #START PROGRAMA
-    @_('PROGRAMA jump_principal ID ";" set_global_var_scope vars funciones PRINCIPAL upd_principal bloque')
+    @_('PROGRAMA jump_principal ID ";" set_global_var_scope vars funciones PRINCIPAL bloque')
     def programa(self, p):
       return
 
-    @_('PROGRAMA jump_principal ID ";" set_global_var_scope funciones PRINCIPAL upd_principal bloque')
-    def programa(self, p):
-      return
-
-    @_('PROGRAMA jump_principal ID ";" set_global_var_scope vars PRINCIPAL upd_principal bloque')
-    def programa(self, p):
-      return
-
-    @_('PROGRAMA jump_principal ID ";" set_global_var_scope PRINCIPAL upd_principal bloque')
-    def programa(self, p):
-      return
-
-    @_('')
+    @_('empty')
     def set_global_var_scope(self, p):
       self.action_handler.start_global_var_declaration()
 

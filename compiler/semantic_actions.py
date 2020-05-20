@@ -1,6 +1,6 @@
 from compiler.quadruplelist import QuadrupleList
 from compiler.cubosemantico import CuboSemantico
-from compiler.dirfunciones import TuplaTablaVariables, DirectorioFunciones, VarType, TuplaDirectorioFunciones
+from compiler.dirfunciones import TuplaTablaVariables, VarType, TuplaDirectorioFunciones
 from compiler.memory import VirtualMemoryManager
 
 class SemanticActionHandler:
@@ -79,8 +79,6 @@ class SemanticActionHandler:
 
       self.current_local_var_table[result_temp_var.name] = result_temp_var
 
-      print(result_temp_var)
-
       a_addr = self.resolve_address(a)
       b_addr = self.resolve_address(b)
 
@@ -93,12 +91,9 @@ class SemanticActionHandler:
       type=VarType.BOOL,
       addr=self.get_addr(VarType.BOOL))
 
-    print(result_temp_var)
-
     self.current_local_var_table[result_temp_var.name] = result_temp_var
     a_addr = self.resolve_address(a)
     b_addr = self.resolve_address(b)
-    print(a, b, a_addr, b_addr)
 
     self.validate_operation_and_get_result_type(op, a, b)
 
@@ -133,9 +128,8 @@ class SemanticActionHandler:
     quad_to_update = self.jump_stack.pop()
 
     a_addr = self.resolve_address(cond)
-    b_addr = self.resolve_address(self.quad_list.pointer)
 
-    self.quad_list.update_target(quad_to_update, a_addr, None, b_addr)
+    self.quad_list.update_target(quad_to_update, a_addr, None, self.quad_list.pointer)
 
   def start_else(self):
     self.quad_list.add_quadd('JUMP', -1, -1, -1)
@@ -190,8 +184,12 @@ class SemanticActionHandler:
 
   def start_func_scope_var_declaration(self, return_t, scope):
     self.current_scope = scope
-    #self.param_table[scope] = []
-    self.param_table[scope] = TuplaDirectorioFunciones(name=scope, return_type=return_t, param_table=[])
+    self.param_table[scope] = TuplaDirectorioFunciones(
+      name=scope,
+      return_type=return_t,
+      param_table=[],
+      local_variable_count = 0,
+      start_pointer=self.quad_list.pointer+1)
     self.current_local_var_table = dict()
 
     if(return_t != 'void'):
@@ -251,17 +249,12 @@ class SemanticActionHandler:
     self.quad_list.update_target(quad_to_update, None, None, self.quad_list.pointer)
 
   def func_return(self, scope, value):
-    ########################
-    print("regrese")
     expected_type = self.param_table[scope].return_type
     if value == None:
       return_value = None
     else:
       return_value = self.resolve_primitive_type(value)
 
-    print(expected_type)
-    print(return_value)
-    print("--------------------------")
     if expected_type != 'void':
       if return_value == None:
         raise Exception('{} function should return a value.'.format(expected_type))

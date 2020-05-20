@@ -24,25 +24,5 @@ class TuplaDirectorioFunciones:
     name: str
     return_type: ReturnType
     param_table: list
-
-    #def add_var(self, tupla: TuplaTablaVariables):
-      #self.vars_table[tupla.name] = tupla
-
-    #def add_vars(self, tuplas: list):
-      #for t in tuplas:
-        #self.add_var(t)
-
-
-class DirectorioFunciones:
-  def __init__(self):
-    self.dict_funciones = dict()
-
-  def add_func_entry(self, tupla: TuplaDirectorioFunciones):
-    # tupla.global_var_dir = global_var_dir
-    self.dict_funciones[tupla.name] = tupla
-
-  def add_global_vars(self, tuplas: list):
-    for t in tuplas:
-      self.vars_table[t.name] = t
-
-
+    local_variable_count: int
+    start_pointer: int
