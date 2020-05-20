@@ -60,10 +60,10 @@ class CalcParser(Parser):
     def expresion(self, p): return self.action_handler.consume_relational_op(p[1], p[0], p[2])
 
 
-    @_('verify_function_name args_funcion ")" ";"')
+    @_('verify_function_name args_funcion ")"')
     def llamada_funcion(self, p):
-      self.action_handler.function_called(p.verify_function_name, p.args_funcion)
-      return p
+      return self.action_handler.function_called(p.verify_function_name, p.args_funcion)
+
 
     @_('ID "("')
     def verify_function_name(self, p):
@@ -83,14 +83,15 @@ class CalcParser(Parser):
     #END expresion
 
     #START ESTATUTO
-    @_('asignacion ";"',
+    @_('asignacion  ";"',
       'funciones',
       'lectura',
       'escritura',
       'decision',
       'condicional',
       'no_condicional',
-      'llamada_funcion'
+      'llamada_funcion',
+      'llamada_funcion ";"'
     )
     def estatuto(self, p): return p[0]
 
@@ -102,7 +103,7 @@ class CalcParser(Parser):
 
 
     @_('"{" bloqueaux REGRESA exp ";" "}"')
-    def bloque(self, p): return p[3]
+    def bloque(self, p): return self.action_handler.bind_return(p[3])
 
 
     @_('empty',

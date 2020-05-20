@@ -29,8 +29,8 @@ class SemanticActionHandler:
     else:
       return self.resolve_var(s).type.value
 
-  def get_addr(self, type):
-    if self.current_scope == 'global':
+  def get_addr(self, type, scope):
+    if scope == 'global':
       return self.virtual_memory_manager.global_addr.next(type)
     else:
       return self.virtual_memory_manager.temp_addr.next(type)
@@ -75,7 +75,7 @@ class SemanticActionHandler:
       result_temp_var = TuplaTablaVariables(
         name=self.quad_list.get_next_temp(),
         type=result_type,
-        addr=self.get_addr(result_type))
+        addr=self.get_addr(result_type, scope=self.current_scope))
 
       self.current_local_var_table[result_temp_var.name] = result_temp_var
 
@@ -89,7 +89,7 @@ class SemanticActionHandler:
     result_temp_var = TuplaTablaVariables(
       name=self.quad_list.get_next_temp(),
       type=VarType.BOOL,
-      addr=self.get_addr(VarType.BOOL))
+      addr=self.get_addr(VarType.BOOL, scope=self.current_scope))
 
     self.current_local_var_table[result_temp_var.name] = result_temp_var
     a_addr = self.resolve_address(a)
@@ -195,20 +195,20 @@ class SemanticActionHandler:
     if(return_t != 'void'):
       var_func = "var_func_" + scope
       self.current_scope = 'global'
-      addr = self.get_addr(VarType(return_t))
+      addr = self.get_addr(VarType(return_t), scope=self.current_scope)
       self.current_scope = scope
-      self.global_var_table[var_func] = TuplaTablaVariables(name=var_func, type=return_t, addr=addr)
+      self.global_var_table[var_func] = TuplaTablaVariables(name=var_func, type=VarType(return_t), addr=addr)
 
   def add_variable_to_current_scope(self, tipo, args):
     var_type = VarType(tipo)
     arg_count = len(args)
     for i in range(0,arg_count):
-      addr = self.get_addr(var_type)
+      addr = self.get_addr(var_type, scope=self.current_scope)
       self.current_local_var_table[args[i]] = TuplaTablaVariables(name=args[i], type=var_type, addr=addr)
 
   def add_param_to_current_scope(self, name, tipo):
     var_type = VarType(tipo)
-    addr = self.get_addr(var_type)
+    addr = self.get_addr(var_type, scope=self.current_scope)
     self.param_table[self.current_scope].param_table.append(var_type.value)
     self.current_local_var_table[name] = TuplaTablaVariables(name=name, type=var_type, addr=addr)
 
@@ -231,6 +231,8 @@ class SemanticActionHandler:
     if arg_count != expected_param_count:
       raise Exception('Function {} was supplied {} arguments when {} parameters were declared.'.format(func_name, arg_count, expected_param_count))
 
+    return 'var_func_' + func_name
+
     for i in range(0, arg_count):
       resolved_arg_type = self.resolve_primitive_type(args[i])
       value_addr = self.resolve_address(args[i])
@@ -247,6 +249,14 @@ class SemanticActionHandler:
   def principal(self):
     quad_to_update = self.jump_stack.pop()
     self.quad_list.update_target(quad_to_update, None, None, self.quad_list.pointer)
+
+  def bind_return(self, value):
+    a_addr = self.resolve_address(value)
+    b_addr = self.resolve_address("var_func_" + self.current_scope)
+
+    self.quad_list.add_quadd('=', a_addr, -1, b_addr)
+    self.quad_list.add_quadd('RETURN', -1, -1, b_addr)
+    return b_addr
 
   def func_return(self, scope, value):
     expected_type = self.param_table[scope].return_type
