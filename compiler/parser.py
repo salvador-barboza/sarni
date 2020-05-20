@@ -20,8 +20,7 @@ class CalcParser(Parser):
 
     # START exp
     @_('termino')
-    def exp(self, p):
-      return p[0]
+    def exp(self, p): return p[0]
 
     @_('termino "+" exp',
       'termino "-" exp')
@@ -72,17 +71,14 @@ class CalcParser(Parser):
       return p.ID
 
     @_('expresion "," args_funcion')
-    def args_funcion(self, p):
-      return [p.expresion] + p.args_funcion
+    def args_funcion(self, p): return [p.expresion] + p.args_funcion
 
     @_('expresion')
-    def args_funcion(self, p):
-      return [p[0]]
+    def args_funcion(self, p): return [p[0]]
 
 
     @_('empty')
-    def args_funcion(self, p):
-      return []
+    def args_funcion(self, p): return []
 
     #END expresion
 
@@ -96,27 +92,23 @@ class CalcParser(Parser):
       'no_condicional',
       'llamada_funcion'
     )
-    def estatuto(self, p):
-      return p[0]
+    def estatuto(self, p): return p[0]
 
     #END ESTATUTO
 
     # START BLOQUE
     @_('"{" bloqueaux "}"')
-    def bloque(self, p):
-      return #p[1]
+    def bloque(self, p): pass
 
 
     @_('"{" bloqueaux REGRESA exp ";" "}"')
-    def bloque(self, p):
-      return p[3]
+    def bloque(self, p): return p[3]
 
 
     @_('empty',
         'estatuto',
         'estatuto bloqueaux')
-    def bloqueaux(self, p):
-      return p[0]
+    def bloqueaux(self, p): return p[0]
     #END BLOQUE
 
     #START ASIGNACION
@@ -126,7 +118,7 @@ class CalcParser(Parser):
 
     #START LECTURA
     @_('LEE "(" lectura_aux ")" ";"')
-    def lectura(self, p): return
+    def lectura(self, p): pass
 
     @_('ID',
       'expresion')
@@ -140,7 +132,7 @@ class CalcParser(Parser):
 
     #START ESCRITURA
     @_('ESCRIBE "(" escritura_aux ")" ";"')
-    def escritura(self, p): return
+    def escritura(self, p): pass
 
     @_('ID',
       'expresion')
@@ -186,8 +178,7 @@ class CalcParser(Parser):
     #START PARAMS
 
     @_('"(" empty ")"')
-    def params(self, p):
-      return []
+    def params(self, p): return []
 
     @_('"(" tipo ID paramsaux ")"')
     def params(self, p):
@@ -199,15 +190,13 @@ class CalcParser(Parser):
       return self.action_handler.add_param_to_current_scope(name=p.ID, tipo=VarType(p.tipo))
 
     @_('empty')
-    def paramsaux(self, p): return
+    def paramsaux(self, p): pass
     #END PARAMS
 
     #START FUNCIONES
     @_('function_init params vars bloque end_funcion_declaration funciones_aux')
     def funciones(self, p):
       self.action_handler.func_return(p.function_init, p.bloque)
-
-      return
 
     @_('empty')
     def end_funcion_declaration(self, p):
@@ -223,16 +212,14 @@ class CalcParser(Parser):
     def funciones_tipo_de_retorno(self, p): return p[0]
 
     @_('funciones', 'empty')
-    def funciones_aux(self, p):
-      return
+    def funciones_aux(self, p): pass
     #END FUNCIONES
 
     #START TIPO
     @_('INT',
       'FLOAT',
       'CHAR')
-    def tipo(self, p):
-      return p[0]
+    def tipo(self, p): return p[0]
     #END TIPO
 
     #START VARS
@@ -250,16 +237,13 @@ class CalcParser(Parser):
       self.action_handler.add_variable_to_current_scope(tipo=VarType(p.tipo), args=p.lista_id_aux)
 
     @_(' lista_id  "," lista_id_aux')
-    def lista_id_aux(self, p):
-      return [p.lista_id] + p.lista_id_aux
+    def lista_id_aux(self, p): return [p.lista_id] + p.lista_id_aux
 
     @_(' lista_id')
-    def lista_id_aux(self, p):
-      return [p[0]]
+    def lista_id_aux(self, p): return [p[0]]
 
     @_('empty')
-    def lista_id_aux(self, p):
-      return []
+    def lista_id_aux(self, p): return []
 
     @_('empty')
     def vars(self, p): pass
@@ -267,22 +251,18 @@ class CalcParser(Parser):
 
     #START LISTA_ID
     @_('ID')
-    def lista_id(self, p):
-      return p[0]
+    def lista_id(self, p): return p[0]
 
     @_('ID lista_accesor lista_accesor')
-    def lista_id(self, p):
-      return
+    def lista_id(self, p): pass
 
     @_('"[" ENTERO "]"')
-    def lista_accesor(self, p):
-      return
+    def lista_accesor(self, p): pass
     #END LISTA_ID
 
     #START PROGRAMA
-    @_('PROGRAMA jump_principal ID ";" set_global_var_scope vars funciones PRINCIPAL bloque')
-    def programa(self, p):
-      return
+    @_('PROGRAMA jump_principal ID ";" set_global_var_scope vars funciones PRINCIPAL upd_principal bloque')
+    def programa(self, p): pass
 
     @_('empty')
     def set_global_var_scope(self, p):
@@ -299,6 +279,5 @@ class CalcParser(Parser):
 
     #START EMPTY
     @_('')
-    def empty(self, p):
-      pass
+    def empty(self, p): pass
     #END EMPTY
