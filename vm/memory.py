@@ -14,24 +14,33 @@ class MemoryBlock:
   def write(self, direct, value):
     real_addr = direct - self.start
 
-    if 0  <= real_addr < self.seg_size:
-      self.int[real_addr] = value
-    elif self.seg_size  <= real_addr < self.seg_size * 2:
-      self.float[real_addr] = value
-    elif self.seg_size * 2  <= real_addr < self.seg_size * 3:
-      self.char[real_addr] = value
-    elif self.seg_size * 3  <= real_addr < self.seg_size * 4:
-      self.bool[real_addr] = value
-
+    if self.is_in_int_range(real_addr):
+      self.int[self.get_int_addr(real_addr)] = value
+    elif self.is_in_float_range(real_addr):
+      self.float[self.get_float_addr(real_addr)] = value
+    elif self.is_in_char_range(real_addr):
+      self.char[self.get_char_addr(real_addr)] = value
+    elif self.is_in_bool_range(real_addr):
+      self.bool[self.get_bool_addr(real_addr)] = value
 
   def read(self, direct):
     real_addr = direct - self.start
 
-    if 0  <= real_addr < self.seg_size:
-      return self.int[real_addr]
-    elif self.seg_size <= real_addr < self.seg_size * 2:
-      return self.float[real_addr]
-    elif self.seg_size * 2  <= real_addr < self.seg_size * 3:
-      return self.char[real_addr]
-    elif self.seg_size * 3  <= real_addr < self.seg_size * 4:
-      return self.bool[real_addr]
+    if self.is_in_int_range(real_addr):
+      return self.int[self.get_int_addr(real_addr)]
+    elif self.is_in_float_range(real_addr):
+      return self.float[self.get_float_addr(real_addr)]
+    elif self.is_in_char_range(real_addr):
+      return self.char[self.get_char_addr(real_addr)]
+    elif self.is_in_bool_range(real_addr):
+      return self.bool[self.get_bool_addr(real_addr)]
+
+  def is_in_int_range(self, addr): return 0 <= addr < self.seg_size
+  def is_in_float_range(self, addr): return self.seg_size <= addr < self.seg_size * 2
+  def is_in_char_range(self, addr): return self.seg_size * 2  <= addr < self.seg_size * 3
+  def is_in_bool_range(self, addr): return self.seg_size * 3  <= addr < self.seg_size * 4
+
+  def get_int_addr(self, addr): return addr
+  def get_float_addr(self, addr): return addr - self.seg_size
+  def get_char_addr(self, addr): return addr - self.seg_size * 2
+  def get_bool_addr(self, addr): return addr - self.seg_size * 3

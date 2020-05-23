@@ -44,7 +44,6 @@ class SemanticActionHandler:
     return self.virtual_memory_manager.temp_addr.next(type)
 
   def resolve_address(self, s):
-    print(s)
     var = self.resolve_var(s)
     if var != None:
       return var.addr
@@ -120,6 +119,7 @@ class SemanticActionHandler:
     b_addr = self.resolve_address(target)
 
     self.quad_list.add_quadd(Instruction.ASSIGN, a_addr, -1, b_addr)
+    return target
 
   def consume_read(self, target):
     addr = self.resolve_address(target)
@@ -147,7 +147,9 @@ class SemanticActionHandler:
   def end_else(self, cond):
     else_start = self.jump_stack.pop()
     if_start = self.jump_stack.pop()
-    self.quad_list.update_target(if_start, cond, None, else_start + 1)
+
+    cond_addr = self.resolve_address(cond)
+    self.quad_list.update_target(if_start, cond_addr, None, else_start + 1)
     self.quad_list.update_target(else_start, None, None, self.quad_list.pointer)
 
   def start_while(self):
@@ -173,19 +175,30 @@ class SemanticActionHandler:
       self.quad_list.add_quadd(Instruction.JUMP, -1, -1, jump_on_false_quad)
       self.quad_list.update_target(quad_to_update, self.quad_list.pointer)
 
-  def start_for(self):
-    self.jump_stack.append(self.quad_list.pointer - 2)
-    self.jump_stack.append(self.quad_list.pointer - 1)
-    self.quad_list.add_quadd(Instruction.JUMPF, -1, -1, -1)
-    self.jump_stack.append(self.quad_list.pointer - 1)
+  def start_for(self, asignacion, condicion):
+      result_temp_var = TuplaTablaVariables(
+        name=self.quad_list.get_next_temp(),
+        type=VarType.BOOL,
+        addr=self.get_addr(VarType.BOOL, scope=self.current_scope))
 
-  def end_for(self, cond):
-    quad_to_update = self.jump_stack.pop()
-    jump_on_false_quad = self.jump_stack.pop()
-    quad_declared = self.jump_stack.pop()
-    self.quad_list.add_quadd(Instruction.PLUS, 1, -1, self.quad_list.quadruples[quad_declared][3])
-    self.quad_list.add_quadd(Instruction.JUMP, -1, -1, jump_on_false_quad)
-    self.quad_list.update_target(quad_to_update, cond, None, self.quad_list.pointer)
+      assignment_addr = self.resolve_address(asignacion)
+      cond_address = self.resolve_address(condicion)
+      self.jump_stack.append(self.quad_list.pointer - 1) # Assignment quad
+      self.jump_stack.append(self.quad_list.pointer ) # Cond quad
+      self.quad_list.add_quadd(Instruction.SMLR_EQ, assignment_addr, cond_address, result_temp_var.addr)
+      self.jump_stack.append(self.quad_list.pointer) # Jump quad
+      self.quad_list.add_quadd(Instruction.JUMPF, result_temp_var.addr, -1, -1)
+
+  def end_for(self):
+    jump_quad = self.jump_stack.pop()
+    cond_quad = self.jump_stack.pop()
+    assignment_quad = self.jump_stack.pop()
+    assignment_target_addr = self.quad_list.quadruples[assignment_quad][3]
+
+    one_const_addr = self.resolve_address(1)
+    self.quad_list.add_quadd(Instruction.PLUS, assignment_target_addr, one_const_addr, assignment_target_addr)
+    self.quad_list.add_quadd(Instruction.JUMP, -1, -1, cond_quad)
+    self.quad_list.update_target(jump_quad, None, None, self.quad_list.pointer)
 
   # Variables y funciones
   def start_global_var_declaration(self):

@@ -43,7 +43,9 @@ class CalcLexer(Lexer):
 
       # Operadores
       IGUAL,
-      DIFERENTE
+      DIFERENTE,
+      GTR_EQ,
+      SML_EQ
      }
 
     ignore = ' \t'
@@ -75,6 +77,8 @@ class CalcLexer(Lexer):
     LEE = r'lee'
     ESCRIBE = r'escribe'
     IGUAL = r'=='
+    GTR_EQ = r'>='
+    SML_EQ = r'<='
     DIFERENTE = r'!='
 
     @_(r'\".*\"')

@@ -53,15 +53,20 @@ class VM:
       self.write(C, self.read(A) == self.read(B))
     elif instruction == Instruction.SMLR:
       self.write(C, self.read(A) < self.read(B))
+    elif instruction == Instruction.SMLR_EQ:
+      self.write(C, self.read(A) <= self.read(B))
     elif instruction == Instruction.GTR:
       self.write(C, self.read(A) > self.read(B))
+    elif instruction == Instruction.GTR_EQ:
+      self.write(C, self.read(A) >= self.read(B))
     elif instruction == Instruction.WRITE:
       print(self.read(C))
+      pass
     elif instruction == Instruction.JUMP:
       frame.IP = C
       return
     elif instruction == Instruction.JUMPF:
-      if self.read(C) == False:
+      if self.read(A) == False:
         frame.IP = C
         return
     elif instruction == Instruction.ERA:
@@ -72,8 +77,6 @@ class VM:
       )
     elif instruction == Instruction.PARAM:
       self.next_frame.memory.write(C, self.read(B))
-      print(C, self.read(B), self.next_frame.memory.read(C))
-
     elif instruction == Instruction.GOSUB:
       frame.IP+=1
       self.switch_to_new_frame()
