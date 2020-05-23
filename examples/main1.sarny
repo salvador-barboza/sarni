@@ -1,29 +1,21 @@
 programa papito;
 var
   int W;
+  int Arreglo[10];
 
-funcion int suma3(int i, int j)
+funcion int suma3(int i)
 {
-  si (i == 2) entonces {
-    regresa i;
+  si (i / 2 == 4.0) entonces {
+    regresa 0;
   } sino {
-    regresa i * j;
+    regresa i;
   }
 
   regresa 0;
 }
 
-funcion void test() {
-  desde W = 0 hasta 10 hacer {
-    escribe(W);
-  }
-}
-
-
 principal() {
-  escribe(suma3(20, 2));
-  test();
   desde W = 1 hasta 21 hacer {
-    escribe(W);
+    escribe(suma3(W));
   }
 }

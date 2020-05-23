@@ -12,7 +12,7 @@ class CalcParser(Parser):
 
     precedence = (
         ('left', '+', '-'),
-        ('left', '*', '/')
+        ('left', '*', '/','%')
       )
 
     def __init__(self):
@@ -23,7 +23,7 @@ class CalcParser(Parser):
     def exp(self, p): return p[0]
 
     @_('termino "+" exp',
-      'termino "-" exp')
+      'termino "-" exp',)
     def exp(self, p): return self.action_handler.consume_arithmetic_op(p[1], p[0], p[2])
     # END exp
 
@@ -33,8 +33,13 @@ class CalcParser(Parser):
       return p[0]
 
     @_('factor "*" termino',
+<<<<<<< HEAD
        'factor "%" termino',
        'factor "/" termino')
+=======
+      'factor "/" termino',
+      'factor "%" termino')
+>>>>>>> ff75fd79dac24ae73e32a0fb02cddb17b38456be
     def termino(self, p): return self.action_handler.consume_arithmetic_op(p[1], p[0], p[2])
     #END termino
 
@@ -238,12 +243,12 @@ class CalcParser(Parser):
 
     @_('tipo lista_id_aux ";"')
     def declaracion(self, p):
-      self.action_handler.add_variable_to_current_scope(tipo=VarType(p.tipo), args=p.lista_id_aux)
+      self.action_handler.add_variable_to_current_scope(tipo=VarType(p.tipo), vars=p.lista_id_aux)
 
-    @_(' lista_id  "," lista_id_aux')
+    @_('lista_id  "," lista_id_aux')
     def lista_id_aux(self, p): return [p.lista_id] + p.lista_id_aux
 
-    @_(' lista_id')
+    @_('lista_id')
     def lista_id_aux(self, p): return [p[0]]
 
     @_('empty')
@@ -254,14 +259,15 @@ class CalcParser(Parser):
     #END VARS
 
     #START LISTA_ID
-    @_('ID')
-    def lista_id(self, p): return p[0]
-
-    @_('ID lista_accesor lista_accesor')
-    def lista_id(self, p): pass
+    @_('ID dimension dimension')
+    def lista_id(self, p):
+      return (p.ID, p[1], p[2])
 
     @_('"[" ENTERO "]"')
-    def lista_accesor(self, p): pass
+    def dimension(self, p): return p.ENTERO
+
+    @_('empty')
+    def dimension(self, p): return 0 # Retorna 0 pues si no hay una dimension, esta dimension vale 0.
     #END LISTA_ID
 
     #START PROGRAMA
