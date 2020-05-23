@@ -10,7 +10,8 @@ class Frame:
 
 class VM:
   global_memory = MemoryBlock(start=GLOBAL_MEMORY_BOUNDS[0], end=GLOBAL_MEMORY_BOUNDS[1])
-  frames = [Frame(IP=0, memory=None)]
+  frames = [Frame(IP=0,
+    memory=MemoryBlock(start=LOCAL_MEMORY_BOUNDS[0], end=LOCAL_MEMORY_BOUNDS[1]))]
   next_frame: Frame = None
 
   def __init__(self, quads, constants, func_dir):

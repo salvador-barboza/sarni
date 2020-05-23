@@ -51,4 +51,4 @@ class VirtualMemoryManager:
 
   def clear_mem(self):
     self.temp_addr = MemoryBlock(TEMP_MEMORY_BOUNDS[0], TEMP_MEMORY_BOUNDS[1])
-    self.local_addr = MemoryBlock(TEMP_MEMORY_BOUNDS[0], TEMP_MEMORY_BOUNDS[1])
+    self.local_addr = MemoryBlock(LOCAL_MEMORY_BOUNDS[0], LOCAL_MEMORY_BOUNDS[1])
