@@ -1,9 +1,9 @@
 from compiler.dirfunciones import VarType
 
 class MemoryBlock:
-  def __init__(self, start, size):
+  def __init__(self, start, end):
     self.start = start
-    self.size = size
+    self.size = end - start
     self.seg_size = self.size // 4
 
     self.int = [None]* self.seg_size
