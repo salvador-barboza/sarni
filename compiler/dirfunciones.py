@@ -24,5 +24,6 @@ class TuplaDirectorioFunciones:
     name: str
     return_type: ReturnType
     param_table: list
+    param_pointers: list
     local_variable_count: int
     start_pointer: int

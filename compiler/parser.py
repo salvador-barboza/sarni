@@ -50,7 +50,9 @@ class CalcParser(Parser):
     def expresion(self, p): return p[0]
 
     @_('exp "<" exp',
-       'exp ">" exp')
+       'exp ">" exp',
+       'exp SML_EQ exp',
+       'exp GTR_EQ exp')
     def expresion(self, p): return self.action_handler.consume_relational_op(p[1], p[0], p[2])
 
     @_('exp IGUAL exp',
@@ -145,11 +147,11 @@ class CalcParser(Parser):
     #END ESCRITURA
 
     #START NO_CONDICIONAL
-    @_('DESDE asignacion HASTA expresion seen_for HACER bloque')
-    def no_condicional(self, p): self.action_handler.end_for(p.expresion)
+    @_('DESDE asignacion HASTA expresion')
+    def for_start(self, p):  self.action_handler.start_for(p.asignacion, p.expresion)
 
-    @_('')
-    def seen_for(self, p):  self.action_handler.start_for()
+    @_('for_start HACER bloque')
+    def no_condicional(self, p): self.action_handler.end_for()
     #END NO_CONDICIONAL
 
     #START CONDICIONAL

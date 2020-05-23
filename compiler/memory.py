@@ -1,14 +1,14 @@
 from compiler.dirfunciones import VarType
+from shared.memory_size import GLOBAL_MEMORY_BOUNDS, LOCAL_MEMORY_BOUNDS, TEMP_MEMORY_BOUNDS, CONST_MEMORY_BOUNDS
 
 class MemoryBlock:
-  def __init__(self, chunk_size, start):
+  def __init__(self, start, end):
+    chunk_size = (end - start + 1) // 4
+
     self.int = start
     self.float = self.int + chunk_size
     self.char = self.float + chunk_size
     self.bool = self.char + chunk_size
-    self.end = self.bool + chunk_size
-
-    print(self.int, self.float, self.char, self.bool)
 
   def next_int(self):
     next_val = self.int
@@ -43,12 +43,12 @@ class MemoryBlock:
 
 
 class VirtualMemoryManager:
-  chunk_size = 1500
-
   def __init__(self):
-    self.global_addr = MemoryBlock(self.chunk_size, 0)
-    self.temp_addr = MemoryBlock(self.chunk_size, self.global_addr.end)
-    self.const_addr = MemoryBlock(self.chunk_size, self.temp_addr.end)
+    self.global_addr = MemoryBlock(GLOBAL_MEMORY_BOUNDS[0], GLOBAL_MEMORY_BOUNDS[1])
+    self.local_addr = MemoryBlock(LOCAL_MEMORY_BOUNDS[0], LOCAL_MEMORY_BOUNDS[1])
+    self.temp_addr = MemoryBlock(TEMP_MEMORY_BOUNDS[0], TEMP_MEMORY_BOUNDS[1])
+    self.const_addr = MemoryBlock(CONST_MEMORY_BOUNDS[0], CONST_MEMORY_BOUNDS[1])
 
-  def clear_temp(self):
-    self.temp_addr = MemoryBlock(self.chunk_size, self.global_addr.end)
+  def clear_mem(self):
+    self.temp_addr = MemoryBlock(TEMP_MEMORY_BOUNDS[0], TEMP_MEMORY_BOUNDS[1])
+    self.local_addr = MemoryBlock(LOCAL_MEMORY_BOUNDS[0], LOCAL_MEMORY_BOUNDS[1])

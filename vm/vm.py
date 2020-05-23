@@ -1,16 +1,25 @@
 from vm.memory import MemoryBlock
+from dataclasses import dataclass
+from shared.memory_size import GLOBAL_MEMORY_BOUNDS, LOCAL_MEMORY_BOUNDS, CONST_MEMORY_BOUNDS, TEMP_MEMORY_BOUNDS
+from shared.instruction_set import Instruction
+
+@dataclass
+class Frame:
+  IP: int
+  memory: MemoryBlock
 
 class VM:
-  global_memory = MemoryBlock(start=0, size=6000)
-  temp_memory = MemoryBlock(start=6000, size=6000)
-
-  IP = 0
+  global_memory = MemoryBlock(start=GLOBAL_MEMORY_BOUNDS[0], end=GLOBAL_MEMORY_BOUNDS[1])
+  frames = [Frame(IP=0,
+    memory=MemoryBlock(start=LOCAL_MEMORY_BOUNDS[0], end=LOCAL_MEMORY_BOUNDS[1]))]
+  next_frame: Frame = None
 
   def __init__(self, quads, constants, func_dir):
     self.quads = quads
     self.constants = constants
     self.constant_memory = dict(zip(constants.values(), constants.keys()))
     self.func_dir = func_dir
+    self.curr_param_pointer = 0
 
   def __inspect__(self):
     print(self.constants)
@@ -21,62 +30,96 @@ class VM:
       print(str(i) + str(quad))
       i+=1
 
-
   def run(self):
     print("Inicio:")
-    while self.IP < len(self.quads):
+    while self.get_current_frame().IP < len(self.quads):
       self.next_instruction()
 
   def next_instruction(self):
-    (instruction, A, B, C) = self.quads[self.IP]
-    if instruction == '+':
-      self.write(C, self.read(A) + self.read(B))
-      self.IP += 1
-    elif instruction == '-':
-      self.write(C, self.read(A) - self.read(B))
-      self.IP += 1
-    elif instruction == '*':
-      self.write(C, self.read(A) * self.read(B))
-      self.IP += 1
-    elif instruction == '/':
-      self.write(C, self.read(A) / self.read(B))
-      self.IP += 1
-    elif instruction == '=':
-      self.write(C, self.read(A))
-      self.IP += 1
-    elif instruction == '==':
-      self.write(C, self.read(A) == self.read(B))
-      self.IP += 1
-    elif instruction == '<':
-      self.write(C, self.read(A) < self.read(B))
-      self.IP += 1
-    elif instruction == '>':
-      self.write(C, self.read(A) > self.read(B))
-      self.IP += 1
-    elif instruction == 'WRITE':
-      print(self.read(C))
-      self.IP += 1
-    elif instruction == 'JUMP':
-      self.IP = C
-      return
-    elif instruction == 'JUMPF':
-      if self.read(C) == False:
-        self.IP = C
-        return
+    frame = self.get_current_frame()
+    (instruction, A, B, C) = self.quads[frame.IP]
 
+    if instruction == Instruction.PLUS:
+      self.write(C, self.read(A) + self.read(B))
+    elif instruction == Instruction.MINUS:
+      self.write(C, self.read(A) - self.read(B))
+    elif instruction == Instruction.MULTIP:
+      self.write(C, self.read(A) * self.read(B))
+    elif instruction == Instruction.DIVISION:
+      self.write(C, self.read(A) / self.read(B))
+    elif instruction == Instruction.ASSIGN:
+      self.write(C, self.read(A))
+    elif instruction == Instruction.EQ:
+      self.write(C, self.read(A) == self.read(B))
+    elif instruction == Instruction.SMLR:
+      self.write(C, self.read(A) < self.read(B))
+    elif instruction == Instruction.SMLR_EQ:
+      self.write(C, self.read(A) <= self.read(B))
+    elif instruction == Instruction.GTR:
+      self.write(C, self.read(A) > self.read(B))
+    elif instruction == Instruction.GTR_EQ:
+      self.write(C, self.read(A) >= self.read(B))
+    elif instruction == Instruction.WRITE:
+      print(self.read(C))
+      pass
+    elif instruction == Instruction.JUMP:
+      frame.IP = C
+      return
+    elif instruction == Instruction.JUMPF:
+      if self.read(A) == False:
+        frame.IP = C
+        return
+    elif instruction == Instruction.ERA:
+      self.curr_param_pointer = 0
+      self.start_new_frame(
+        IP=self.func_dir[C].start_pointer-1,
+        frame_size=6000
+      )
+    elif instruction == Instruction.PARAM:
+      self.next_frame.memory.write(C, self.read(B))
+    elif instruction == Instruction.GOSUB:
+      frame.IP+=1
+      self.switch_to_new_frame()
+      return
+    elif instruction == Instruction.ENDFUN:
+      self.restore_past_frame()
+      return
+    elif instruction == Instruction.RETURN:
+      self.restore_past_frame()
+      return
+
+    frame.IP+=1
+
+  def get_current_frame(self):
+    return self.frames[len(self.frames) - 1]
+
+  def start_new_frame(self, IP, frame_size):
+    self.next_frame = Frame(IP=IP, memory=MemoryBlock(LOCAL_MEMORY_BOUNDS[0], LOCAL_MEMORY_BOUNDS[0] + frame_size))
+
+  def switch_to_new_frame(self):
+    self.frames.append(self.next_frame)
+    self.next_frame = None
+
+  def restore_past_frame(self):
+    self.frames.pop()
 
   def write(self, direct, value):
-    if 0  <= direct < 6000:
+    if GLOBAL_MEMORY_BOUNDS[0] <= direct < GLOBAL_MEMORY_BOUNDS[1]:
       self.global_memory.write(direct, value)
-    elif 6000 <= direct < 12000:
-      self.temp_memory.write(direct, value)
-    elif 12000 <= direct < 18000:
-      raise MemoryError("Trying to write to memory")
+    elif LOCAL_MEMORY_BOUNDS[0] <= direct < LOCAL_MEMORY_BOUNDS[1]:
+      self.get_current_memory().write(direct, value)
+    elif CONST_MEMORY_BOUNDS[0] <= direct < CONST_MEMORY_BOUNDS[1]:
+      raise MemoryError("Cannot to write to read-only memory")
 
   def read(self, direct):
-    if 0  <= direct < 6000:
+    if GLOBAL_MEMORY_BOUNDS[0] <= direct < GLOBAL_MEMORY_BOUNDS[1]:
       return self.global_memory.read(direct)
-    elif 6000 <= direct < 12000:
-      return self.temp_memory.read(direct)
-    elif 12000 <= direct < 18000:
+    elif LOCAL_MEMORY_BOUNDS[0] <= direct < LOCAL_MEMORY_BOUNDS[1]:
+      return self.get_current_memory().read(direct)
+    elif CONST_MEMORY_BOUNDS[0] <= direct < CONST_MEMORY_BOUNDS[1]:
       return self.constant_memory[direct]
+
+  def get_current_memory(self):
+    current_frame = self.get_current_frame()
+    return current_frame.memory
+
