@@ -33,7 +33,8 @@ class CalcParser(Parser):
       return p[0]
 
     @_('factor "*" termino',
-      'factor "/" termino')
+       'factor "%" termino',
+       'factor "/" termino')
     def termino(self, p): return self.action_handler.consume_arithmetic_op(p[1], p[0], p[2])
     #END termino
 

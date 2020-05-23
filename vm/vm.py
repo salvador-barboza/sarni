@@ -47,6 +47,8 @@ class VM:
       self.write(C, self.read(A) * self.read(B))
     elif instruction == Instruction.DIVISION:
       self.write(C, self.read(A) / self.read(B))
+    elif instruction == Instruction.MOD:
+      self.write(C, self.read(A) % self.read(B))
     elif instruction == Instruction.ASSIGN:
       self.write(C, self.read(A))
     elif instruction == Instruction.EQ:
