@@ -12,7 +12,7 @@ class CalcParser(Parser):
 
     precedence = (
         ('left', '+', '-'),
-        ('left', '*', '/')
+        ('left', '*', '/','%')
       )
 
     def __init__(self):
@@ -23,7 +23,7 @@ class CalcParser(Parser):
     def exp(self, p): return p[0]
 
     @_('termino "+" exp',
-      'termino "-" exp')
+      'termino "-" exp',)
     def exp(self, p): return self.action_handler.consume_arithmetic_op(p[1], p[0], p[2])
     # END exp
 
@@ -33,7 +33,8 @@ class CalcParser(Parser):
       return p[0]
 
     @_('factor "*" termino',
-      'factor "/" termino')
+      'factor "/" termino',
+      'factor "%" termino')
     def termino(self, p): return self.action_handler.consume_arithmetic_op(p[1], p[0], p[2])
     #END termino
 

@@ -15,6 +15,7 @@ class Instruction(Enum):
   MINUS = auto()
   MULTIP = auto()
   DIVISION = auto()
+  MODULE = auto()
   GTR = auto()
   GTR_EQ = auto()
   SMLR = auto()
@@ -31,6 +32,8 @@ def get_instr_for_op(op):
     return Instruction.MULTIP
   elif op == '/':
     return Instruction.DIVISION
+  elif op == '%':
+    return Instruction.MODULE
   elif op == '<':
     return Instruction.SMLR
   elif op == '<=':
