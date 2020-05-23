@@ -1,11 +1,10 @@
 programa papito;
 var
   int W;
-  int Arreglo[10];
 
 funcion int suma3(int i)
 {
-  si (i / 2 == 4.0) entonces {
+  si (i % 2 == 0) entonces {
     regresa 0;
   } sino {
     regresa i;
