@@ -1,10 +1,11 @@
 programa papito;
 var
-  int W;
+  int W, I;
+  int  Arreglo2[8][10], Arreglo[10];
 
 funcion int suma3(int i)
 {
-  si (i % 2 == 0) entonces {
+  si (i / 2 == 4.0) entonces {
     regresa 0;
   } sino {
     regresa i;
@@ -14,7 +15,11 @@ funcion int suma3(int i)
 }
 
 principal() {
-  desde W = 1 hasta 21 hacer {
-    escribe(suma3(W));
+  desde W = 0 hasta 9 hacer {
+    Arreglo[W] = W*10;
+  }
+
+  desde W = 0 hasta 9 hacer {
+    escribe(Arreglo[W]);
   }
 }

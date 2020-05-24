@@ -1,5 +1,6 @@
 from sly import Parser
-from compiler.dirfunciones import TuplaDirectorioFunciones, ReturnType, TuplaTablaVariables, VarType
+from compiler.dirfunciones import TuplaDirectorioFunciones, ReturnType, \
+  TuplaTablaVariables, VarType
 from compiler.lexer import Tokens
 from compiler.semantic_actions import SemanticActionHandler
 
@@ -62,11 +63,9 @@ class CalcParser(Parser):
        'exp "|" exp')
     def expresion(self, p): return self.action_handler.consume_relational_op(p[1], p[0], p[2])
 
-
     @_('verify_function_name args_funcion ")"')
     def llamada_funcion(self, p):
       return self.action_handler.function_called(p.verify_function_name, p.args_funcion)
-
 
     @_('ID "("')
     def verify_function_name(self, p):
@@ -266,7 +265,7 @@ class CalcParser(Parser):
     def dimension(self, p): return p.exp
 
     @_('empty')
-    def dimension(self, p): return 0 # Retorna 0 pues si no hay una dimension, esta dimension vale 0.
+    def dimension(self, p): return None
     #END LISTA_ID
 
     #START PROGRAMA

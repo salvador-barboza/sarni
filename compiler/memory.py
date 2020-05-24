@@ -1,5 +1,6 @@
 from compiler.dirfunciones import VarType
-from shared.memory_size import GLOBAL_MEMORY_BOUNDS, LOCAL_MEMORY_BOUNDS, TEMP_MEMORY_BOUNDS, CONST_MEMORY_BOUNDS
+from shared.memory_size import GLOBAL_MEMORY_BOUNDS, LOCAL_MEMORY_BOUNDS, \
+  TEMP_MEMORY_BOUNDS, CONST_MEMORY_BOUNDS, POINTER_MEMORY_BOUND
 
 class MemoryBlock:
   def __init__(self, start, end):
@@ -72,13 +73,13 @@ class MemoryBlock:
     elif type == VarType.BOOL:
       return self.next_bool_block(size)
 
-
 class VirtualMemoryManager:
   def __init__(self):
     self.global_addr = MemoryBlock(GLOBAL_MEMORY_BOUNDS[0], GLOBAL_MEMORY_BOUNDS[1])
     self.local_addr = MemoryBlock(LOCAL_MEMORY_BOUNDS[0], LOCAL_MEMORY_BOUNDS[1])
     self.temp_addr = MemoryBlock(TEMP_MEMORY_BOUNDS[0], TEMP_MEMORY_BOUNDS[1])
     self.const_addr = MemoryBlock(CONST_MEMORY_BOUNDS[0], CONST_MEMORY_BOUNDS[1])
+    self.pointer_addr = MemoryBlock(POINTER_MEMORY_BOUND[0], POINTER_MEMORY_BOUND[1])
 
   def clear_mem(self):
     self.temp_addr = MemoryBlock(TEMP_MEMORY_BOUNDS[0], TEMP_MEMORY_BOUNDS[1])

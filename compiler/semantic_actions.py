@@ -14,20 +14,23 @@ class SemanticActionHandler:
   current_scope = 'global'
   param_table = dict()
   constant_map = dict()
+  pointer_table = dict()
   virtual_memory_manager = VirtualMemoryManager()
 
+
+  def is_array(self, s):
+    return type(s) == tuple and s[1] != None
+
   def resolve_var(self, v):
-      var_name = v
-      is_array = type(v) == tuple
-      if is_array:
-        var_name = v[0]
+      var_id = v
+      if (type(v) == tuple):
+        var_id = v[0]
 
-      var = self.global_var_table.get(var_name)
+      var = self.global_var_table.get(var_id)
       if (var == None):
-        var = self.current_local_var_table.get(var_name)
-      elif (var == None):
-        var = self.current_local_var_table.get(var_name)
-
+        var = self.current_local_var_table.get(var_id)
+      if (var == None):
+        var = self.pointer_table.get(var_id)
       return var
 
   def resolve_primitive_type(self, s):
@@ -59,19 +62,38 @@ class SemanticActionHandler:
   def get_temp_addr(self, type):
     return self.virtual_memory_manager.temp_addr.next(type)
 
+  def get_pointer_addr(self, type):
+    return self.virtual_memory_manager.pointer_addr.next(type)
+
+
+  def resolve_array_addr(self, arr, var_entry):
+    print(var_entry)
+    (name, dim1, dim2) = arr
+
+    dim1_addr = self.resolve_address(dim1)
+    pointer = TuplaTablaVariables(
+        name=self.quad_list.get_next_pointer(),
+        type=var_entry.type,
+        addr=self.get_pointer_addr(var_entry.type))
+
+    if dim2 == None:
+      self.quad_list.add_quadd(Instruction.ADD_ADDR, var_entry.addr, dim1_addr, pointer.addr)
+    else:
+      res = self.consume_arithmetic_op("*", var_entry.dims[0], dim1)
+      res = self.consume_arithmetic_op("+", dim2, res)
+
+      self.quad_list.add_quadd(Instruction.ADD_ADDR, var_entry.addr, res.addr, pointer.addr)
+
+    return pointer.addr
+
+
   def resolve_address(self, s):
     var = self.resolve_var(s)
-    is_array = type(s) == tuple and s[1] != None and s[2] != None
+    is_array = self.is_array(s)
+
     if var != None:
       if is_array:
-        addr = var.addr
-        if var.dims[1] > 0:
-          addr += self.resolve_address(s[1]) * var.dims[0]
-          addr += self.resolve_address(s[2])
-        else:
-          addr += self.resolve_address(s[1])
-
-        return addr
+        return self.resolve_array_addr(s, var)
       else:
         return var.addr
     else:
@@ -261,6 +283,8 @@ class SemanticActionHandler:
 
       if dim1 != None and dim2 != None:
         addr = self.allocate_block(type=var_type, scope=self.current_scope, size=dim1*dim2)
+      if dim1 != None:
+        addr = self.allocate_block(type=var_type, scope=self.current_scope, size=dim1)
       else:
         addr = self.get_addr(type=var_type, scope=self.current_scope)
 

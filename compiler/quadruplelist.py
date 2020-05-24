@@ -14,11 +14,16 @@ class QuadrupleList:
   quadruples = []
   current_temp = 0
   current_param = 0
+  current_pointer = 0
   pointer = 0
 
   def get_next_temp(self):
     self.current_temp += 1
     return 't'+str(self.current_temp)
+
+  def get_next_pointer(self):
+    self.current_pointer += 1
+    return 'p'+str(self.current_pointer)
 
   def reset_params(self):
     self.current_param = 0

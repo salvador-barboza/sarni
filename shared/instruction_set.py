@@ -10,6 +10,7 @@ class Instruction(Enum):
   GOSUB = auto()
   WRITE = auto()
   READ = auto()
+  ADD_ADDR = auto()
   ASSIGN = auto()
   PLUS = auto()
   MINUS = auto()
