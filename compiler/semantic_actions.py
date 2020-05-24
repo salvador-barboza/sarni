@@ -17,20 +17,30 @@ class SemanticActionHandler:
   virtual_memory_manager = VirtualMemoryManager()
 
   def resolve_var(self, v):
-      var = self.global_var_table.get(v)
+      var_name = v
+      is_array = type(v) == tuple
+      if is_array:
+        var_name = v[0]
+
+      var = self.global_var_table.get(var_name)
       if (var == None):
-        var = self.current_local_var_table.get(v)
+        var = self.current_local_var_table.get(var_name)
       elif (var == None):
-        var = self.current_local_var_table.get(v)
+        var = self.current_local_var_table.get(var_name)
+
       return var
 
   def resolve_primitive_type(self, s):
-    if (type(s) == int):
+    var_id = s
+    if (type(s) == tuple):
+      var_id = s[0]
+
+    if (type(var_id) == int):
       return 'int'
-    elif(type(s) == float):
+    elif(type(var_id) == float):
       return 'float'
     else:
-      var_type = self.resolve_var(s)
+      var_type = self.resolve_var(var_id)
       if (var_type != None):
         return var_type.type.value
 
@@ -40,13 +50,30 @@ class SemanticActionHandler:
     else:
       return self.virtual_memory_manager.local_addr.next(type)
 
+  def allocate_block(self, type, scope, size):
+    if scope == 'global':
+      return self.virtual_memory_manager.global_addr.allocate_block(type, size)
+    else:
+      return self.virtual_memory_manager.local_addr.allocate_block(type, size)
+
   def get_temp_addr(self, type):
     return self.virtual_memory_manager.temp_addr.next(type)
 
   def resolve_address(self, s):
     var = self.resolve_var(s)
+    is_array = type(s) == tuple and s[1] != None and s[2] != None
     if var != None:
-      return var.addr
+      if is_array:
+        addr = var.addr
+        if var.dims[1] > 0:
+          addr += self.resolve_address(s[1]) * var.dims[0]
+          addr += self.resolve_address(s[2])
+        else:
+          addr += self.resolve_address(s[1])
+
+        return addr
+      else:
+        return var.addr
     else:
       return self.get_or_create_constant_addr(s)
 
@@ -220,19 +247,28 @@ class SemanticActionHandler:
       self.current_scope = 'global'
       addr = self.get_addr(VarType(return_t), scope=self.current_scope)
       self.current_scope = scope
-      self.global_var_table[var_func] = TuplaTablaVariables(name=var_func, type=VarType(return_t), addr=addr)
+      self.global_var_table[var_func] = TuplaTablaVariables(
+        name=var_func,
+        type=VarType(return_t),
+        addr=addr)
 
   def add_variable_to_current_scope(self, tipo, vars):
     var_type = VarType(tipo)
 
     for var in vars:
       (var_name, dim1, dim2) = var
-      print(dim1, dim2)
-      addr = self.get_addr(var_type, scope=self.current_scope)
+      addr = None
+
+      if dim1 != None and dim2 != None:
+        addr = self.allocate_block(type=var_type, scope=self.current_scope, size=dim1*dim2)
+      else:
+        addr = self.get_addr(type=var_type, scope=self.current_scope)
+
       self.current_local_var_table[var_name] = TuplaTablaVariables(
         name=var_name,
         type=var_type,
-        addr=addr)
+        addr=addr,
+        dims=(dim1, dim2))
 
   def add_param_to_current_scope(self, name, tipo):
     var_type = VarType(tipo)

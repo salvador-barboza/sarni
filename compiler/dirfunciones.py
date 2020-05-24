@@ -18,6 +18,7 @@ class TuplaTablaVariables:
     name: str
     type: VarType
     addr: int
+    dims: (int, int) = (None, None)
 
 @dataclass
 class TuplaDirectorioFunciones:

@@ -116,7 +116,7 @@ class CalcParser(Parser):
     #END BLOQUE
 
     #START ASIGNACION
-    @_('ID "=" expresion', 'ID "=" CARACTER')
+    @_('lista_id "=" expresion', 'lista_id "=" CARACTER')
     def asignacion(self, p): return self.action_handler.consume_assignment(p[0], p[2])
     #END ASIGNACION
 
@@ -124,11 +124,11 @@ class CalcParser(Parser):
     @_('LEE "(" lectura_aux ")" ";"')
     def lectura(self, p): pass
 
-    @_('ID',
+    @_('lista_id',
       'expresion')
     def lectura_aux(self, p): self.action_handler.consume_read(p[0])
 
-    @_('ID "," lectura_aux',
+    @_('lista_id "," lectura_aux',
       'expresion "," lectura_aux')
     def lectura_aux(self, p): self.action_handler.consume_read(p[0])
 
@@ -138,11 +138,11 @@ class CalcParser(Parser):
     @_('ESCRIBE "(" escritura_aux ")" ";"')
     def escritura(self, p): pass
 
-    @_('ID',
+    @_('lista_id',
       'expresion')
     def escritura_aux(self, p): self.action_handler.consume_write(p[0])
 
-    @_('ID "," escritura_aux',
+    @_('lista_id "," escritura_aux',
       'expresion "," escritura_aux')
     def escritura_aux(self, p): self.action_handler.consume_write(p[0])
     #END ESCRITURA
@@ -254,12 +254,16 @@ class CalcParser(Parser):
     #END VARS
 
     #START LISTA_ID
+    @_('ID')
+    def lista_id(self, p):
+      return (p.ID, None, None)
+
     @_('ID dimension dimension')
     def lista_id(self, p):
       return (p.ID, p[1], p[2])
 
-    @_('"[" ENTERO "]"')
-    def dimension(self, p): return p.ENTERO
+    @_('"[" exp "]"')
+    def dimension(self, p): return p.exp
 
     @_('empty')
     def dimension(self, p): return 0 # Retorna 0 pues si no hay una dimension, esta dimension vale 0.

@@ -30,6 +30,26 @@ class MemoryBlock:
     self.bool += 1
     return next_val
 
+  def next_int_block(self, size):
+    next_val = self.int
+    self.int += size
+    return next_val
+
+  def next_float_block(self, size):
+    next_val = self.float
+    self.float += size
+    return next_val
+
+  def next_char_block(self, size):
+    next_val = self.char
+    self.char += size
+    return next_val
+
+  def next_bool_block(self, size):
+    next_val = self.bool
+    self.bool += size
+    return next_val
+
 
   def next(self, type):
     if type == VarType.INT:
@@ -40,6 +60,17 @@ class MemoryBlock:
       return self.next_char()
     elif type == VarType.BOOL:
       return self.next_bool()
+
+  def allocate_block(self, type, size):
+    print(size)
+    if type == VarType.INT:
+      return self.next_int_block(size)
+    elif type == VarType.FLOAT:
+      return self.next_float_block(size)
+    elif type == VarType.CHAR:
+      return self.next_char_block(size)
+    elif type == VarType.BOOL:
+      return self.next_bool_block(size)
 
 
 class VirtualMemoryManager:
