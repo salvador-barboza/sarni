@@ -3,23 +3,42 @@ var
   int W, I;
   int  Arreglo2[8][10], Arreglo[10];
 
-funcion int suma3(int i)
+funcion int suma3(int w)
 {
-  si (i / 2 == 4.0) entonces {
+  si (w / 2 == 4.0) entonces {
     regresa 0;
   } sino {
-    regresa i;
+    regresa w;
   }
 
   regresa 0;
 }
 
-principal() {
-  desde W = 0 hasta 9 hacer {
-    Arreglo[W] = W*10;
-  }
+funcion int limon(int i, float j, int z)
+{
+  escribe(i);
+  escribe(j);
+  escribe(z);
+  regresa z;
+}
 
-  desde W = 0 hasta 9 hacer {
-    escribe(Arreglo[W]);
+principal() {
+  Arreglo[0] = 1;
+  Arreglo[W] = 11;
+  Arreglo[2] = 111;
+  Arreglo[3] = 1111;
+  Arreglo[5] = 111111;
+  Arreglo[6] = 1111111;
+  Arreglo[7] = 1111111;
+  Arreglo[8] = 1111111;
+  Arreglo[9] = 1111111;
+  Arreglo[4] = 1111111;
+  lee(W);
+  escribe(Arreglo[W]);
+  limon(i, 2.0, 3);
+  W = 1;
+  mientras (W < 5) haz {
+    escribe(W)
+    W = W + 1
   }
 }

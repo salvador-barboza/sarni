@@ -46,6 +46,8 @@ class SemanticActionHandler:
       var_type = self.resolve_var(var_id)
       if (var_type != None):
         return var_type.type.value
+      else:
+        raise Exception('variable "{}" was not declared in the current scope.'.format(var_id))
 
   def get_addr(self, type, scope):
     if scope == 'global':
@@ -65,9 +67,7 @@ class SemanticActionHandler:
   def get_pointer_addr(self, type):
     return self.virtual_memory_manager.pointer_addr.next(type)
 
-
   def resolve_array_addr(self, arr, var_entry):
-    print(var_entry)
     (name, dim1, dim2) = arr
 
     dim1_addr = self.resolve_address(dim1)
@@ -77,15 +77,26 @@ class SemanticActionHandler:
         addr=self.get_pointer_addr(var_entry.type))
 
     if dim2 == None:
-      self.quad_list.add_quadd(Instruction.ADD_ADDR, var_entry.addr, dim1_addr, pointer.addr)
+      if self.resolve_primitive_type(dim1) == 'int':
+        self.quad_list.add_quadd(Instruction.VER, dim1_addr, 0, var_entry.dims[0])
+        self.quad_list.add_quadd(Instruction.ADD_ADDR, var_entry.addr, dim1_addr, pointer.addr)
+      else:
+        raise Exception('Indexes must be integer')
     else:
-      res = self.consume_arithmetic_op("*", var_entry.dims[0], dim1)
-      res = self.consume_arithmetic_op("+", dim2, res)
-
-      self.quad_list.add_quadd(Instruction.ADD_ADDR, var_entry.addr, res.addr, pointer.addr)
-
+      if self.resolve_primitive_type(dim1) == 'int':
+        if self.resolve_primitive_type(dim2) == 'int':
+          dim2_addr = self.resolve_address(dim2)
+          self.quad_list.add_quadd(Instruction.VER, dim1_addr, 0, var_entry.dims[0])
+          res = self.consume_arithmetic_op("*", var_entry.dims[0], dim1_addr)
+          self.quad_list.add_quadd(Instruction.VER, dim2_addr, 0, var_entry.dims[1])
+          res = self.consume_arithmetic_op("+", dim2_addr, res)
+          res_addr = self.resolve_address(res)
+          self.quad_list.add_quadd(Instruction.ADD_ADDR, var_entry.addr, res_addr, pointer.addr)
+        else:
+          raise Exception('Indexes must be integer')
+      else:
+        raise Exception('Indexes must be integer')
     return pointer.addr
-
 
   def resolve_address(self, s):
     var = self.resolve_var(s)
@@ -97,26 +108,27 @@ class SemanticActionHandler:
       else:
         return var.addr
     else:
-      return self.get_or_create_constant_addr(s)
+      const_addr = self.get_or_create_constant_addr(s)
+      if const_addr == None:
+        raise Exception('variable "{}" was not declared in the current scope.'.format(s[0]))
+      return const_addr
+
 
   def get_or_create_constant_addr(self, c):
-    addr = self.constant_map.get(c)
-    if addr == None:
+    try:
+      addr = self.constant_map.get(str(c))
+      if addr != None: return addr[1]
+
       var_type = VarType(type(c).__name__)
       addr = self.virtual_memory_manager.const_addr.next(var_type)
-      self.constant_map[c] = addr
-
-    return addr
+      self.constant_map[str(c)] = (c, addr, var_type.name)
+      return addr
+    except:
+      return None
 
   def validate_operation_and_get_result_type(self, op, a, b):
       primitive_a = self.resolve_primitive_type(a)
       primitive_b = self.resolve_primitive_type(b)
-
-      if (primitive_a == None):
-        raise Exception('variable {} was not declared in the current scope'.format(a))
-
-      if (primitive_b == None):
-        raise Exception('variable {} was not declared in the current scope'.format(b))
 
       result_type = self.cubo_seman.typematch(primitive_a, op, primitive_b)
 
@@ -171,11 +183,15 @@ class SemanticActionHandler:
     return target
 
   def consume_read(self, target):
-    addr = self.resolve_address(target)
-    self.quad_list.add_quadd(Instruction.READ, -1, -1, addr)
+    var = self.resolve_var(target)
+    self.quad_list.add_quadd(Instruction.READ, 1, var.type.value, var.addr)
 
   def consume_write(self, value):
-    addr = self.resolve_address(value)
+    addr = None
+    if (type(value) == str and value[0] == '"'):
+      addr = value
+    else:
+      addr = self.resolve_address(value)
     self.quad_list.add_quadd(Instruction.WRITE, -1, -1, addr)
 
   def start_if(self):
@@ -294,12 +310,15 @@ class SemanticActionHandler:
         addr=addr,
         dims=(dim1, dim2))
 
-  def add_param_to_current_scope(self, name, tipo):
-    var_type = VarType(tipo)
-    addr = self.get_addr(var_type, scope=self.current_scope)
-    self.param_table[self.current_scope].param_table.append(var_type.value)
-    self.param_table[self.current_scope].param_pointers.append(addr)
-    self.current_local_var_table[name] = TuplaTablaVariables(name=name, type=var_type, addr=addr)
+  def add_params_to_current_scope(self, params):
+    params.reverse()
+
+    for (name, tipo) in params:
+      var_type = VarType(tipo)
+      addr = self.get_addr(var_type, scope=self.current_scope)
+      self.param_table[self.current_scope].param_table.append(var_type.value)
+      self.param_table[self.current_scope].param_pointers.append(addr)
+      self.current_local_var_table[name] = TuplaTablaVariables(name=name, type=var_type, addr=addr)
 
   def end_function_declaration(self):
     self.quad_list.add_quadd(Instruction.ENDFUN, -1, -1, -1)
@@ -307,9 +326,9 @@ class SemanticActionHandler:
 
   def verify_function_name(self, func_name):
     self.quad_list.reset_params()
-    exists = self.param_table.get(func_name).name != None
+    exists = self.param_table.get(func_name) != None
     if not exists:
-      raise Exception('Function {} does not exist'.format(func_name))
+      raise Exception('Function "{}" does not exist'.format(func_name))
     self.quad_list.add_quadd(Instruction.ERA, -1, -1, func_name)
 
 
@@ -320,7 +339,7 @@ class SemanticActionHandler:
     expected_param_count = len(func_param_types)
 
     if arg_count != expected_param_count:
-      raise Exception('Function {} was supplied {} arguments when {} parameters were declared.'.format(func_name, arg_count, expected_param_count))
+      raise Exception('Function "{}" recieved {}. {} parameters were declared.'.format(func_name, arg_count, expected_param_count))
 
     for i in range(0, arg_count):
       resolved_arg_type = self.resolve_primitive_type(args[i])
@@ -349,8 +368,11 @@ class SemanticActionHandler:
     self.jump_stack.append(self.quad_list.pointer - 1)
 
   def principal(self):
-    quad_to_update = self.jump_stack.pop()
-    self.quad_list.update_target(quad_to_update, None, None, self.quad_list.pointer)
+    try:
+      quad_to_update = self.jump_stack.pop()
+      self.quad_list.update_target(quad_to_update, None, None, self.quad_list.pointer)
+    except:
+      pass
 
   def bind_return(self, value):
     a_addr = self.resolve_address(value)

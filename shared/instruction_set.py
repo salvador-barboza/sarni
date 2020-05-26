@@ -13,6 +13,7 @@ class Instruction(Enum):
   ADD_ADDR = auto()
   ASSIGN = auto()
   PLUS = auto()
+  MATR_ADD = auto()
   MINUS = auto()
   MULTIP = auto()
   DIVISION = auto()
@@ -23,6 +24,8 @@ class Instruction(Enum):
   SMLR_EQ = auto()
   EQ = auto()
   NOTEQ = auto()
+  VER = auto()
+
 
 def get_instr_for_op(op):
   if op == '+':

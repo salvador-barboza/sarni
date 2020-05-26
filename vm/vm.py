@@ -19,13 +19,12 @@ class VM:
 
   def __init__(self, quads, constants, func_dir):
     self.quads = quads
-    self.constants = constants
-    self.constant_memory = dict(zip(constants.values(), constants.keys()))
+    self.constant_memory = dict(map(lambda c : (c[1], c[0]), constants.values()))
     self.func_dir = func_dir
     self.curr_param_pointer = 0
 
   def __inspect__(self):
-    print(self.constants)
+    print(self.constant_memory)
     print(self.func_dir)
 
     i = 0
@@ -65,9 +64,24 @@ class VM:
     elif instruction == Instruction.GTR_EQ:
       self.write(C, self.read(A) >= self.read(B))
     elif instruction == Instruction.ADD_ADDR:
+      print(self.read(B))
       self.pointer_memory.write(C, A + self.read(B))
+    elif instruction == Instruction.VER:
+      if self.read(A) < B or C <= self.read(A):
+        raise Exception('index {} out of range'.format(self.read(A)))
     elif instruction == Instruction.WRITE:
       print(self.read(C))
+    elif instruction == Instruction.READ:
+      x = input()
+      if B == 'int':
+        x = int(x)
+      elif B == 'float':
+        x = float(x)
+      elif B == 'char':
+        x = str(x)
+      elif B == 'bool':
+        x = bool(x)
+      self.write(C,x)
     elif instruction == Instruction.JUMP:
       frame.IP = C
       return

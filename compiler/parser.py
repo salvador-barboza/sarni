@@ -43,7 +43,7 @@ class CalcParser(Parser):
     @_('"(" expresion ")"')
     def factor(self, p): return p[1]
 
-    @_('ID', 'ENTERO', 'DECIMAL')
+    @_('lista_id', 'ENTERO', 'DECIMAL')
     def factor(self, p): return p[0]
     # END factor
 
@@ -137,11 +137,15 @@ class CalcParser(Parser):
     @_('ESCRIBE "(" escritura_aux ")" ";"')
     def escritura(self, p): pass
 
-    @_('lista_id',
+    @_(
+      'LETRERO',
+      'lista_id',
       'expresion')
     def escritura_aux(self, p): self.action_handler.consume_write(p[0])
 
-    @_('lista_id "," escritura_aux',
+    @_(
+      'LETRERO "," escritura_aux',
+      'lista_id "," escritura_aux',
       'expresion "," escritura_aux')
     def escritura_aux(self, p): self.action_handler.consume_write(p[0])
     #END ESCRITURA
@@ -185,15 +189,17 @@ class CalcParser(Parser):
 
     @_('"(" tipo ID paramsaux ")"')
     def params(self, p):
-      return self.action_handler.add_param_to_current_scope(name=p.ID, tipo=VarType(p.tipo))
+      p.paramsaux.append((p.ID, VarType(p.tipo)))
+      return self.action_handler.add_params_to_current_scope(params=p.paramsaux)
 
 
     @_('"," tipo ID paramsaux')
     def paramsaux(self, p):
-      return self.action_handler.add_param_to_current_scope(name=p.ID, tipo=VarType(p.tipo))
+      p.paramsaux.append((p.ID, VarType(p.tipo)))
+      return p.paramsaux
 
     @_('empty')
-    def paramsaux(self, p): pass
+    def paramsaux(self, p): return []
     #END PARAMS
 
     #START FUNCIONES
@@ -289,3 +295,10 @@ class CalcParser(Parser):
     @_('')
     def empty(self, p): pass
     #END EMPTY
+
+    def error(self, p):
+      print('Syntax error at line {}'.format(p.lineno))
+      quit()
+      if not p:
+          print("Unexpected eof")
+          quit()
