@@ -83,7 +83,7 @@ class CalcLexer(Lexer):
 
     @_(r'\".*\"')
     def LETRERO(self, t):
-      t.value = t.value
+      t.value = "@"+t.value
       return t # Ver si jala igual sin la funcion    @_(r'\d+')
 
     @_(r'[a-zA-Z_][a-zA-Z0-9_]*')

@@ -1,0 +1,12 @@
+programa papito;
+var
+  int  Arreglo2[8][10], Arreglo[10];
+
+
+funcion void limon(int i, float j, int z)
+{
+}
+
+principal() {
+  escribe("hola mundo", 123);
+}

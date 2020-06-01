@@ -119,9 +119,15 @@ class SemanticActionHandler:
       addr = self.constant_map.get(str(c))
       if addr != None: return addr[1]
 
-      var_type = VarType(type(c).__name__)
+      if type(c) == str and c[0] == '@':
+        var_type = VarType.CHAR
+        value = c[1:]
+      else:
+        var_type = VarType(type(c).__name__)
+        value = c
+
       addr = self.virtual_memory_manager.const_addr.next(var_type)
-      self.constant_map[str(c)] = (c, addr, var_type.name)
+      self.constant_map[str(c)] = (value, addr, var_type.name)
       return addr
     except:
       return None

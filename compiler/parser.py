@@ -135,19 +135,25 @@ class CalcParser(Parser):
 
     #START ESCRITURA
     @_('ESCRIBE "(" escritura_aux ")" ";"')
-    def escritura(self, p): pass
+    def escritura(self, p):
+      p.escritura_aux.reverse()
+      for exp in p.escritura_aux:
+        self.action_handler.consume_write(exp)
+      pass
 
     @_(
       'LETRERO',
       'lista_id',
       'expresion')
-    def escritura_aux(self, p): self.action_handler.consume_write(p[0])
+    def escritura_aux(self, p): return [p[0]]
 
     @_(
       'LETRERO "," escritura_aux',
       'lista_id "," escritura_aux',
       'expresion "," escritura_aux')
-    def escritura_aux(self, p): self.action_handler.consume_write(p[0])
+    def escritura_aux(self, p):
+      p.escritura_aux.append(p[0])
+      return p.escritura_aux
     #END ESCRITURA
 
     #START NO_CONDICIONAL
