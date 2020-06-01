@@ -81,7 +81,7 @@ class CalcLexer(Lexer):
     SML_EQ = r'<='
     DIFERENTE = r'!='
 
-    @_(r'\".*\"')
+    @_(r'\"[^\".]*\"')
     def LETRERO(self, t):
       t.value = "@"+t.value
       return t # Ver si jala igual sin la funcion    @_(r'\d+')
