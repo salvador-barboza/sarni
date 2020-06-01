@@ -64,13 +64,15 @@ class VM:
     elif instruction == Instruction.GTR_EQ:
       self.write(C, self.read(A) >= self.read(B))
     elif instruction == Instruction.ADD_ADDR:
-      print(self.read(B))
       self.pointer_memory.write(C, A + self.read(B))
     elif instruction == Instruction.VER:
       if self.read(A) < B or C <= self.read(A):
         raise Exception('index {} out of range'.format(self.read(A)))
     elif instruction == Instruction.WRITE:
-      print(self.read(C))
+      val_to_print = self.read(C)
+      if (type(val_to_print) == str):
+        val_to_print = val_to_print.replace('\\n', '\n')
+      print(val_to_print, end = '')
     elif instruction == Instruction.READ:
       x = input()
       if B == 'int':

@@ -121,7 +121,7 @@ class SemanticActionHandler:
 
       if type(c) == str and c[0] == '@':
         var_type = VarType.CHAR
-        value = c[1:]
+        value = c[2:-1]
       else:
         var_type = VarType(type(c).__name__)
         value = c
@@ -232,7 +232,9 @@ class SemanticActionHandler:
     quad_to_update = self.jump_stack.pop()
     jump_on_false_quad = self.jump_stack.pop()
     self.quad_list.add_quadd(Instruction.JUMP, -1, -1, jump_on_false_quad)
-    self.quad_list.update_target(quad_to_update, cond, None, self.quad_list.pointer)
+
+    cond_addr = self.resolve_address(cond)
+    self.quad_list.update_target(quad_to_update, cond_addr, None, self.quad_list.pointer)
 
   def start_do_while(self):
       quad_to_update = self.jump_stack.pop()

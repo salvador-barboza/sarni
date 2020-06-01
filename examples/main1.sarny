@@ -23,22 +23,27 @@ funcion int limon(int i, float j, int z)
 }
 
 principal() {
-  Arreglo[0] = 1;
-  Arreglo[W] = 11;
-  Arreglo[2] = 111;
-  Arreglo[3] = 1111;
-  Arreglo[5] = 111111;
-  Arreglo[6] = 1111111;
+  Arreglo[0] = 0;
+  Arreglo[1] = 1;
+  Arreglo[2] = 11;
+  Arreglo[3] = 111;
+  Arreglo[5] = 11111;
+  Arreglo[6] = 111111;
   Arreglo[7] = 1111111;
-  Arreglo[8] = 1111111;
-  Arreglo[9] = 1111111;
-  Arreglo[4] = 1111111;
-  lee(W);
-  escribe(Arreglo[W]);
-  limon(i, 2.0, 3);
-  W = 1;
-  mientras (W < 5) haz {
-    escribe(W)
-    W = W + 1
+  Arreglo[8] = 11111111;
+  Arreglo[9] = 1111111111;
+  Arreglo[4] = 1111;
+  W = 0;
+  mientras (W < 10) haz {
+    escribe("Escribe un numero para la casilla ", W, ": ");
+    lee(I);
+    Arreglo[W] = I;
+    W = W + 1;
+  }
+
+  W = 0;
+  mientras (W < 10) haz {
+    escribe("La casilla ", W, " guarda ", Arreglo[W], "\n");
+    W = W + 1;
   }
 }
