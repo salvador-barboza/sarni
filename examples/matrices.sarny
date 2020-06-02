@@ -2,6 +2,7 @@ programa papito;
 var
   int W, I;
   int MatA[2][3], MatB[3][2], MatC[2][2];
+  float MatF[2][2];
 
 funcion void suma3(int w)
 {
@@ -49,5 +50,21 @@ principal() {
   escribe(MatA[0][2], "\n");
   escribe(MatA[1][0], ",");
   escribe(MatA[1][1], ",");
-  escribe(MatA[1][2]);
+  escribe(MatA[1][2], "\n");
+
+
+
+  MatF[0][0] = 1.0;
+  MatF[0][1] = 2.0;
+  MatF[1][0] = 3.0;
+  MatF[1][1] = 4.0;
+
+  escribe("Matriz original: \n");
+  escribe("[", MatF[0][0], ",",  MatF[0][1], "]\n");
+  escribe("[", MatF[1][0], ",",  MatF[1][1], "]\n");
+
+  escribe("Matriz inversa: \n");
+  MatF = MatF?;
+  escribe("[", MatF[0][0], ",",  MatF[0][1], "]\n");
+  escribe("[", MatF[1][0], ",",  MatF[1][1], "]\n");
 }

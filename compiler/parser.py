@@ -318,7 +318,8 @@ class CalcParser(Parser):
       return self.action_handler.process_transpose(p.lista_id)
 
     @_('lista_id "?"' )
-    def inversa(self, p): pass
+    def inversa(self, p):
+      return self.action_handler.process_inverse(p.lista_id)
     #END MATOP
 
     def error(self, p):

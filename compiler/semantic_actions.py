@@ -237,6 +237,28 @@ class SemanticActionHandler:
 
     return result_temp_var.name
 
+  def process_inverse(self, var):
+    var_ref = self.resolve_var(var)
+    if (var_ref.type != VarType.FLOAT):
+      raise Exception("Inverse is only avalabile for float matrices")
+
+    size = self.compute_arr_block_size(var_ref.dims[0], var_ref.dims[1])
+
+    result_temp_var = TuplaTablaVariables(
+      name=self.quad_list.get_next_temp(),
+      type=var_ref.type,
+      addr=self.allocate_block(type=var_ref.type, size=size, scope=self.current_scope),
+      dims=var_ref.dims)
+
+    self.current_local_var_table[result_temp_var.name] = result_temp_var
+
+    self.quad_list.add_quadd(Instruction.INVERSA,
+      (var_ref.addr, var_ref.dims[0], var_ref.dims[1]),
+      -1,
+      (result_temp_var.addr, result_temp_var.dims[0], result_temp_var.dims[1]))
+
+    return result_temp_var.name
+
   #estatutos
   def consume_arithmetic_op(self, op, a, b):
       if (self.check_multidimensional_op(a, b)):

@@ -169,6 +169,17 @@ class VM:
 
       for i in range(0, size):
         self.write(c_addr + i, res[i])
+    elif instruction == Instruction.INVERSA:
+      (a_addr, a_dim1, a_dim2) = A
+      (c_addr, c_dim1, c_dim2) = C
+      size = a_dim1 * a_dim2
+
+      mat_a = self.read_block(a_addr, size)
+      mat_a = numpy.reshape(mat_a, (a_dim1, a_dim2), order='C')
+      res = numpy.linalg.inv(mat_a).reshape(size)
+
+      for i in range(0, size):
+        self.write(c_addr + i, res[i])
 
     frame.IP+=1
 
