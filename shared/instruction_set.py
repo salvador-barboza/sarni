@@ -28,6 +28,13 @@ class Instruction(Enum):
   OR = auto()
   AND = auto()
 
+  # Multidim variable instrutions
+  MAT_ADD = auto()
+  MAT_SUB = auto()
+  MAT_MULT = auto()
+  MULT_DIM_ASSIGN = auto()
+
+
 
 def get_instr_for_op(op):
   if op == '+':

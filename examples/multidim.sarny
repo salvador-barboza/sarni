@@ -1,0 +1,87 @@
+programa papito;
+var
+  int W, I;
+  int  Arreglo2[8][10], ArregloA[10], ArregloB[10], ArregloC[10];
+
+funcion int suma3(int w)
+{
+  si (w / 2 == 4.0) entonces {
+    regresa 0;
+  } sino {
+    regresa w;
+  }
+
+  regresa 0;
+}
+
+funcion int limon(int i, float j, int z)
+{
+  escribe(i);
+  escribe(j);
+  escribe(z);
+  regresa z;
+}
+
+principal() {
+  ArregloA[0] = 1;
+  ArregloA[1] = 1;
+  ArregloA[2] = 1;
+  ArregloA[3] = 1;
+  ArregloA[4] = 1;
+  ArregloA[5] = 1;
+  ArregloA[6] = 1;
+  ArregloA[7] = 1;
+  ArregloA[8] = 1;
+  ArregloA[9] = 1;
+
+  ArregloB[0] = 1;
+  ArregloB[1] = 2;
+  ArregloB[2] = 3;
+  ArregloB[3] = 4;
+  ArregloB[4] = 5;
+  ArregloB[5] = 6;
+  ArregloB[6] = 7;
+  ArregloB[7] = 8;
+  ArregloB[8] = 9;
+  ArregloB[9] = 10;
+
+  ArregloA = ArregloA + ArregloB + ArregloB;
+
+  desde W = 0 hasta 9 hacer {
+		escribe(ArregloA[W], " ");
+	}
+
+  escribe("\nArregloC antes de asignar\n");
+  desde W = 0 hasta 9 hacer {
+		escribe(ArregloC[W], " ");
+	}
+
+  escribe("\nArregloC despues de asignar\n");
+  ArregloC = ArregloA;
+  desde W = 0 hasta 9 hacer {
+		escribe(ArregloC[W], " ");
+	}
+
+  escribe("\nArregloC despues de reasignar\n");
+  ArregloC = ArregloB;
+  desde W = 0 hasta 9 hacer {
+		escribe(ArregloC[W], " ");
+	}
+
+  ArregloA[0] = 1;
+  ArregloA[1] = 1;
+  ArregloA[2] = 1;
+  ArregloA[3] = 1;
+  ArregloA[4] = 1;
+  ArregloA[5] = 1;
+  ArregloA[6] = 1;
+  ArregloA[7] = 1;
+  ArregloA[8] = 1;
+  ArregloA[9] = 1;
+
+  escribe("\nArregloC despues de restar\n");
+  ArregloC = ArregloC - ArregloA;
+  desde W = 0 hasta 9 hacer {
+		escribe(ArregloC[W], " ");
+	}
+}
