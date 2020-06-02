@@ -1,0 +1,49 @@
+programa papito;
+var
+  int W, I;
+  int  Arreglo2[8][10], ArregloA[10], ArregloB[10];
+
+funcion int suma3(int w)
+{
+  si (w / 2 == 4.0) entonces {
+    regresa 0;
+  } sino {
+    regresa w;
+  }
+
+  regresa 0;
+}
+
+funcion int limon(int i, float j, int z)
+{
+  escribe(i);
+  escribe(j);
+  escribe(z);
+  regresa z;
+}
+
+principal() {
+  ArregloA[0] = 1;
+  ArregloA[1] = 1;
+  ArregloA[2] = 1;
+  ArregloA[3] = 1;
+  ArregloA[4] = 1;
+  ArregloA[5] = 1;
+  ArregloA[6] = 1;
+  ArregloA[7] = 1;
+  ArregloA[8] = 1;
+  ArregloA[9] = 1;
+
+  ArregloB[0] = 10;
+  ArregloB[1] = 10;
+  ArregloB[2] = 10;
+  ArregloB[3] = 10;
+  ArregloB[4] = 10;
+  ArregloB[5] = 10;
+  ArregloB[6] = 10;
+  ArregloB[7] = 10;
+  ArregloB[8] = 10;
+  ArregloB[9] = 10;
+
+  ArregloA = ArregloA * ArregloB;
+}

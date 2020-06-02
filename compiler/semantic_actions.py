@@ -143,8 +143,53 @@ class SemanticActionHandler:
 
       return VarType(result_type)
 
+  def check_multidimensional_op(self, a, b):
+    var_a = self.resolve_var(a)
+    var_b = self.resolve_var(b)
+
+    return not (var_a == None or var_b == None or var_a.dims == (None, None) or var_b.dims == (None, None))
+
+
+  def compute_arr_block_size(self, dim1, dim2):
+    size = dim1
+    if (dim2 != None):
+      size = size * dim2
+    return size
+
+  def process_multidim_arithmetic_op(self, op, a, b):
+    var_a = self.resolve_var(a)
+    var_b = self.resolve_var(b)
+
+    (_, dima1, dima2) = a
+    (_, dimb1, dimb2) = b
+
+    if (dima1 == dima2 and dimb1 == dimb2):
+      result_type = self.validate_operation_and_get_result_type(op, a, b)
+      size = self.compute_arr_block_size(var_a.dims[0], var_a.dims[1])
+      instruction = None
+      if (op == '+'):
+        instruction = Instruction.MATR_ADD
+      elif(op == '*'):
+        instruction = Instruction.MAT_MULT
+      else:
+        raise Exception("Operation {} not supported for arrays or matrices".format(op))
+
+      result_temp_var = TuplaTablaVariables(
+        name=self.quad_list.get_next_temp(),
+        type=result_type,
+        addr=self.allocate_block(type=result_type, size=size, scope=self.current_scope),
+        dims=var_a.dims)
+      self.current_local_var_table[result_temp_var.name] = result_temp_var
+      self.quad_list.add_quadd(instruction, (var_a.addr, size), (var_b.addr, size), (result_temp_var.addr, size))
+
+      return (result_temp_var.name, None, None)
+
+
   #estatutos
   def consume_arithmetic_op(self, op, a, b):
+      if (self.check_multidimensional_op(a, b)):
+        return self.process_multidim_arithmetic_op(op, a, b)
+
       result_type = self.validate_operation_and_get_result_type(op, a, b)
 
       result_temp_var = TuplaTablaVariables(
@@ -175,12 +220,23 @@ class SemanticActionHandler:
     self.quad_list.add_quadd(get_instr_for_op(op), a_addr, b_addr, result_temp_var.addr)
     return result_temp_var.name
 
+  def process_multidim_assignment(self, a, b):
+    var_a = self.resolve_var(a)
+    var_b = self.resolve_var(b)
+    size = self.compute_arr_block_size(var_a.dims[0], var_a.dims[1])
+
+    self.quad_list.add_quadd(Instruction.MULT_DIM_ASSIGN, (var_a.addr, size), -1, (var_b.addr, size))
+
+
   def consume_assignment(self, target, value):
     primitive_target = self.resolve_primitive_type(target)
     primitive_value = self.resolve_primitive_type(value)
 
     if (primitive_target != primitive_value):
       raise Exception('TYPE MISMATCH. {} can\'t be assigned to {}'.format(primitive_value, primitive_target))
+
+    if (self.check_multidimensional_op(target, value)):
+        return self.process_multidim_assignment(target, value)
 
     a_addr = self.resolve_address(value)
     b_addr = self.resolve_address(target)
