@@ -63,7 +63,6 @@ class MemoryBlock:
       return self.next_bool()
 
   def allocate_block(self, type, size):
-    print(size)
     if type == VarType.INT:
       return self.next_int_block(size)
     elif type == VarType.FLOAT:

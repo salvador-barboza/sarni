@@ -17,7 +17,6 @@ class SemanticActionHandler:
   pointer_table = dict()
   virtual_memory_manager = VirtualMemoryManager()
 
-
   def is_array(self, s):
     return type(s) == tuple and s[1] != None
 
@@ -87,9 +86,9 @@ class SemanticActionHandler:
         if self.resolve_primitive_type(dim2) == 'int':
           dim2_addr = self.resolve_address(dim2)
           self.quad_list.add_quadd(Instruction.VER, dim1_addr, 0, var_entry.dims[0])
-          res = self.consume_arithmetic_op("*", var_entry.dims[0], dim1_addr)
+          res = self.consume_arithmetic_op("*", var_entry.dims[1], dim1)
           self.quad_list.add_quadd(Instruction.VER, dim2_addr, 0, var_entry.dims[1])
-          res = self.consume_arithmetic_op("+", dim2_addr, res)
+          res = self.consume_arithmetic_op("+", dim2, res)
           res_addr = self.resolve_address(res)
           self.quad_list.add_quadd(Instruction.ADD_ADDR, var_entry.addr, res_addr, pointer.addr)
         else:
@@ -387,7 +386,7 @@ class SemanticActionHandler:
 
       if dim1 != None and dim2 != None:
         addr = self.allocate_block(type=var_type, scope=self.current_scope, size=dim1*dim2)
-      if dim1 != None:
+      elif dim1 != None:
         addr = self.allocate_block(type=var_type, scope=self.current_scope, size=dim1)
       else:
         addr = self.get_addr(type=var_type, scope=self.current_scope)

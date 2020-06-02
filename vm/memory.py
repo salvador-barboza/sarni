@@ -6,7 +6,7 @@ class MemoryBlock:
     self.size = end - start
     self.seg_size = self.size // 4
 
-    self.int = [1]* self.seg_size
+    self.int = [None] * self.seg_size
     self.float = [None] * self.seg_size
     self.char = [None] * self.seg_size
     self.bool = [None] * self.seg_size
@@ -37,7 +37,6 @@ class MemoryBlock:
 
   def read_block(self, direct, size):
     real_addr = direct - self.start
-
     if self.is_in_int_range(real_addr):
       return self.int[self.get_int_addr(real_addr) : self.get_int_addr(real_addr) + size]
     elif self.is_in_float_range(real_addr):

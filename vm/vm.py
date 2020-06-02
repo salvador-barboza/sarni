@@ -71,8 +71,8 @@ class VM:
     elif instruction == Instruction.ADD_ADDR:
       self.pointer_memory.write(C, A + self.read(B))
     elif instruction == Instruction.VER:
-      if self.read(A) < B or C <= self.read(A):
-        raise Exception('index {} out of range'.format(self.read(A)))
+      if not B <= self.read(A) < C:
+        raise Exception('index {} out of range {}-{}'.format(self.read(A), B, C))
     elif instruction == Instruction.WRITE:
       val_to_print = self.read(C)
       if (type(val_to_print) == str):
@@ -137,8 +137,6 @@ class VM:
       a_size = a_dim1 * a_dim2
       b_size = b_dim1 * b_dim2
       c_size = a_dim1* b_dim2
-      self.write(a_addr, 2)
-      self.write(a_addr+a_size - 1, 2)
 
       mat_a = self.read_block(a_addr, a_size)
       mat_a = (numpy.reshape(mat_a, (a_dim1, a_dim2), order='C'))
