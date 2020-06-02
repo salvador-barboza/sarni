@@ -1,0 +1,28 @@
+programa fibcic;
+var
+	int n;
+
+funcion int fibciclico(int n)
+var int ant1, ant2 , actual, i;
+{
+	ant1 = 1;
+	ant2 = 1;
+	escribe(n, "\n");
+	si ((n == 0) | (n == 1)) entonces {
+        escribe("entre1", "\n");
+		actual = 1;
+	} sino {
+        escribe("entre2", "\n");
+		desde i = 2 hasta n hacer{
+		    actual = ant1 + ant2;
+		    ant2 = ant1;
+		    ant1 = actual;
+		}
+	}
+	regresa actual;
+}
+
+principal(){
+lee(n);
+escribe(fibciclico(n));
+}

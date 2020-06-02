@@ -1,0 +1,34 @@
+programa papito;
+var
+  int n;
+
+funcion int suma3(int w)
+{
+  si (w / 2 == 4.0) entonces {
+    regresa 0;
+  } sino {
+    regresa w;
+  }
+
+  regresa 0;
+}
+
+funcion int facrecursivo(int n)
+{
+    escribe(n, "\n");
+	si (n > 1) entonces {
+		regresa n * facrecursivo(n - 1);
+	} sino {
+		regresa 1;
+	}
+    regresa 0;
+}
+
+
+principal() {
+  
+  n = 5;
+  n = facrecursivo(n);
+  escribe(n, "\n");
+
+}

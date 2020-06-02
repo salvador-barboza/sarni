@@ -1,0 +1,21 @@
+programa faccic;
+var
+	int n;
+
+funcion int facciclico(int n)
+var
+    int i, acum;
+{
+    acum = 1;
+
+	desde i = 2 hasta n hacer{
+		acum = acum * i;
+	}
+	regresa acum;
+}
+
+principal(){
+
+lee(n);
+escribe(facciclico(n), "\n");
+}
