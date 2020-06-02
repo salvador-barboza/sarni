@@ -51,6 +51,9 @@ class CalcParser(Parser):
     @_('exp', 'llamada_funcion')
     def expresion(self, p): return p[0]
 
+    @_('determinante', 'transpuesta', 'inversa')
+    def expresion(self, p): return p[0]
+
     @_('exp "<" exp',
        'exp ">" exp',
        'exp SML_EQ exp',
@@ -304,6 +307,17 @@ class CalcParser(Parser):
     @_('')
     def empty(self, p): pass
     #END EMPTY
+
+    #START MATOP
+    @_('lista_id "$"' )
+    def determinante(self, p): pass
+
+    @_('lista_id "¡"' )
+    def transpuesta(self, p): pass
+
+    @_('lista_id "?"' )
+    def inversa(self, p): pass
+    #END MATOP
 
     def error(self, p):
       print('Syntax error at line {}'.format(p.lineno))

@@ -1,0 +1,34 @@
+programa insercion;
+var
+	int n;
+	int Arreglo[10];
+
+funcion void sort(int n)
+var int llave, auxiliar, i;
+{
+	desde i = 1 hasta n  hacer{
+		llave = Arreglo[i];
+		auxiliar = i - 1;
+    escribe("antes","\n");
+		mientras( (auxiliar >= 0) & (Arreglo[auxiliar] > llave) ) haz{
+      escribe("dentro","\n");
+		  Arreglo[auxiliar + 1] = Arreglo[auxiliar];
+		  auxiliar = auxiliar - 1;
+    }
+    Arreglo[auxiliar + 1] = llave;
+	}
+}
+
+principal(){
+
+	n = 9;
+	desde i = 0 hasta n hacer {
+		Arreglo[i] = n - i;
+  }
+
+  sort(n);
+
+  desde i = 0 hasta n hacer {
+	  escribe(Arreglo[i] );
+  }
+}
