@@ -220,12 +220,12 @@ class SemanticActionHandler:
     self.quad_list.add_quadd(get_instr_for_op(op), a_addr, b_addr, result_temp_var.addr)
     return result_temp_var.name
 
-  def process_multidim_assignment(self, a, b):
-    var_a = self.resolve_var(a)
-    var_b = self.resolve_var(b)
+  def process_multidim_assignment(self, target, value):
+    var_a = self.resolve_var(target)
+    var_b = self.resolve_var(value)
     size = self.compute_arr_block_size(var_a.dims[0], var_a.dims[1])
 
-    self.quad_list.add_quadd(Instruction.MULT_DIM_ASSIGN, (var_a.addr, size), -1, (var_b.addr, size))
+    self.quad_list.add_quadd(Instruction.MULT_DIM_ASSIGN, (var_b.addr, size), -1, (var_a.addr, size))
 
 
   def consume_assignment(self, target, value):
