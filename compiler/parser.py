@@ -310,7 +310,8 @@ class CalcParser(Parser):
 
     #START MATOP
     @_('lista_id "$"' )
-    def determinante(self, p): pass
+    def determinante(self, p):
+      return self.action_handler.process_determinante(p.lista_id)
 
     @_('lista_id "¡"' )
     def transpuesta(self, p): pass

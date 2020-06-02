@@ -146,13 +146,18 @@ class VM:
 
       for i in range(0, c_size):
         self.write(c_addr + i, res[i])
-
     elif instruction == Instruction.MULT_DIM_ASSIGN:
       (a_addr, a_size) = A
       (c_addr, c_size) = C
 
       for i in range(0, a_size):
         self.write(c_addr + i, self.read(a_addr + i))
+    elif instruction == Instruction.DETERMINANTE:
+      (a_addr, a_dim1, a_dim2) = A
+      a_size = a_dim1 * a_dim2
+      mat_a = self.read_block(a_addr, a_size)
+      mat_a = numpy.reshape(mat_a, (a_dim1, a_dim2), order='C')
+      self.write(C, numpy.linalg.det(mat_a))
 
     frame.IP+=1
 

@@ -33,6 +33,8 @@ class Instruction(Enum):
   MAT_SUB = auto()
   MAT_MULT = auto()
   MULT_DIM_ASSIGN = auto()
+  DETERMINANTE = auto()
+  INVERSA = auto()
 
 
 

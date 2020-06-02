@@ -205,6 +205,19 @@ class SemanticActionHandler:
 
       return (result_temp_var.name, None, None)
 
+
+  def process_determinante(self, var):
+    var_ref = self.resolve_var(var)
+    result_temp_var = TuplaTablaVariables(
+      name=self.quad_list.get_next_temp(),
+      type=VarType.FLOAT,
+      addr=self.get_addr(type=VarType.FLOAT, scope=self.current_scope))
+    self.current_local_var_table[result_temp_var.name] = result_temp_var
+
+    dims = self.normalize_dims_for_quad(var_ref.dims)
+    self.quad_list.add_quadd(Instruction.DETERMINANTE, (var_ref.addr, dims[0], dims[1]), -1, result_temp_var.addr)
+    return result_temp_var.name
+
   #estatutos
   def consume_arithmetic_op(self, op, a, b):
       if (self.check_multidimensional_op(a, b)):
