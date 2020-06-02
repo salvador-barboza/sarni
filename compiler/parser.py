@@ -165,11 +165,14 @@ class CalcParser(Parser):
     #END NO_CONDICIONAL
 
     #START CONDICIONAL
-    @_('MIENTRAS "(" expresion ")" seen_while HAZ bloque')
+    @_('MIENTRAS store_cond_begin "(" expresion ")" seen_while HAZ bloque')
     def condicional(self, p): self.action_handler.end_while(p.expresion)
 
     @_('')
     def seen_while(self, p): self.action_handler.start_while()
+
+    @_('')
+    def store_cond_begin(self, p): self.action_handler.prestart_while()
     #END CONDICIONAL
 
     #START DECISION

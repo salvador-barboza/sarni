@@ -300,8 +300,11 @@ class SemanticActionHandler:
     self.quad_list.update_target(if_start, cond_addr, None, else_start + 1)
     self.quad_list.update_target(else_start, None, None, self.quad_list.pointer)
 
+
+  def prestart_while(self):
+    self.jump_stack.append(self.quad_list.pointer)
+
   def start_while(self):
-    self.jump_stack.append(self.quad_list.pointer - 1)
     self.quad_list.add_quadd(Instruction.JUMPF, -1, -1, -1)
     self.jump_stack.append(self.quad_list.pointer - 1)
 
