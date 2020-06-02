@@ -1,0 +1,17 @@
+programa fibrec;
+var
+	int n;
+
+funcion int fibrecursivo(int n)
+{
+	si (n ==  0 | n == 1) entonces {
+		regresa 1;
+	} sino {
+		regresa fibrecursivo(n - 1) + fibrecursivo(n - 2);
+	}
+}
+
+principal(){
+lee(n);
+escribe(fibrecursivo(n));
+}
