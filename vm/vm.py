@@ -64,6 +64,10 @@ class VM:
       self.write(C, self.read(A) > self.read(B))
     elif instruction == Instruction.GTR_EQ:
       self.write(C, self.read(A) >= self.read(B))
+    elif instruction == Instruction.OR:
+      self.write(C, self.read(A) or self.read(B))
+    elif instruction == Instruction.AND:
+      self.write(C, self.read(A) and self.read(B))
     elif instruction == Instruction.ADD_ADDR:
       self.pointer_memory.write(C, A + self.read(B))
     elif instruction == Instruction.VER:

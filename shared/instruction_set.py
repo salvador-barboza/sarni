@@ -25,6 +25,8 @@ class Instruction(Enum):
   EQ = auto()
   NOTEQ = auto()
   VER = auto()
+  OR = auto()
+  AND = auto()
 
   # Multidim variable instrutions
   MAT_ADD = auto()
@@ -57,3 +59,7 @@ def get_instr_for_op(op):
     return Instruction.EQ
   elif op == '!=':
     return Instruction.NOTEQ
+  elif op == '|':
+    return Instruction.OR
+  elif op == '&':
+    return Instruction.AND
