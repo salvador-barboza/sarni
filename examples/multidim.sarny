@@ -45,7 +45,7 @@ principal() {
   ArregloB[8] = 9;
   ArregloB[9] = 10;
 
-  ArregloA = ArregloA + ArregloB;
+  ArregloA = ArregloA + ArregloB + ArregloB;
 
   desde W = 0 hasta 9 hacer {
 		escribe(ArregloA[W], " ");
@@ -64,6 +64,23 @@ principal() {
 
   escribe("\nArregloC despues de reasignar\n");
   ArregloC = ArregloB;
+  desde W = 0 hasta 9 hacer {
+		escribe(ArregloC[W], " ");
+	}
+
+  ArregloA[0] = 1;
+  ArregloA[1] = 1;
+  ArregloA[2] = 1;
+  ArregloA[3] = 1;
+  ArregloA[4] = 1;
+  ArregloA[5] = 1;
+  ArregloA[6] = 1;
+  ArregloA[7] = 1;
+  ArregloA[8] = 1;
+  ArregloA[9] = 1;
+
+  escribe("\nArregloC despues de restar\n");
+  ArregloC = ArregloC - ArregloA;
   desde W = 0 hasta 9 hacer {
 		escribe(ArregloC[W], " ");
 	}

@@ -169,6 +169,8 @@ class SemanticActionHandler:
       instruction = None
       if (op == '+'):
         instruction = Instruction.MATR_ADD
+      elif (op == '-'):
+        instruction = Instruction.MAT_SUB
       elif(op == '*'):
         instruction = Instruction.MAT_MULT
       else:

@@ -116,6 +116,13 @@ class VM:
 
       for i in range(0, a_size):
         self.write(c_addr + i, self.read(a_addr + i) + self.read(b_addr + i))
+    elif instruction == Instruction.MAT_SUB:
+      (a_addr, a_size) = A
+      (b_addr, b_size) = B
+      (c_addr, c_size) = C
+
+      for i in range(0, a_size):
+        self.write(c_addr + i, self.read(a_addr + i) - self.read(b_addr + i))
     elif instruction == Instruction.MULT_DIM_ASSIGN:
       (a_addr, a_size) = A
       (c_addr, c_size) = C
