@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from shared.memory_size import GLOBAL_MEMORY_BOUNDS, LOCAL_MEMORY_BOUNDS, \
   CONST_MEMORY_BOUNDS, TEMP_MEMORY_BOUNDS, POINTER_MEMORY_BOUND
 from shared.instruction_set import Instruction
+import numpy
 
 @dataclass
 class Frame:
@@ -110,19 +111,40 @@ class VM:
       self.restore_past_frame()
       return
     elif instruction == Instruction.MATR_ADD:
-      (a_addr, a_size) = A
-      (b_addr, b_size) = B
-      (c_addr, c_size) = C
+      (a_addr, a_size, _) = A
+      (b_addr, b_size, _) = B
+      (c_addr, c_size, _) = C
 
       for i in range(0, a_size):
         self.write(c_addr + i, self.read(a_addr + i) + self.read(b_addr + i))
     elif instruction == Instruction.MAT_SUB:
-      (a_addr, a_size) = A
-      (b_addr, b_size) = B
-      (c_addr, c_size) = C
+      (a_addr, a_size, _) = A
+      (b_addr, b_size, _) = B
+      (c_addr, c_size, _) = C
 
       for i in range(0, a_size):
         self.write(c_addr + i, self.read(a_addr + i) - self.read(b_addr + i))
+
+    elif instruction == Instruction.MAT_MULT:
+      (a_addr, a_dim1, a_dim2) = A
+      (b_addr, b_dim1, b_dim2) = B
+      (c_addr, c_dim1, c_dim2) = C
+
+      a_size = a_dim1 * a_dim2
+      b_size = b_dim1 * b_dim2
+      c_size = a_dim1* b_dim2
+      self.write(a_addr, 2)
+      self.write(a_addr+a_size - 1, 2)
+
+      mat_a = self.read_block(a_addr, a_size)
+      mat_a = (numpy.reshape(mat_a, (a_dim1, a_dim2), order='C'))
+      mat_b = self.read_block(b_addr, b_size)
+      mat_b = (numpy.reshape(mat_b, (b_dim1, b_dim2), order='C'))
+      res = numpy.matmul(mat_a, mat_b).reshape(c_size)
+
+      for i in range(0, c_size):
+        self.write(c_addr + i, res[i])
+
     elif instruction == Instruction.MULT_DIM_ASSIGN:
       (a_addr, a_size) = A
       (c_addr, c_size) = C
@@ -165,6 +187,17 @@ class VM:
       return self.constant_memory[direct]
     elif POINTER_MEMORY_BOUND[0] <= direct < POINTER_MEMORY_BOUND[1]:
       real_addr = self.pointer_memory.read(direct)
+      return self.read(real_addr)
+
+  def read_block(self, direct, size):
+    if GLOBAL_MEMORY_BOUNDS[0] <= direct < GLOBAL_MEMORY_BOUNDS[1]:
+      return self.global_memory.read_block(direct, size)
+    elif LOCAL_MEMORY_BOUNDS[0] <= direct < LOCAL_MEMORY_BOUNDS[1]:
+      return self.get_current_memory().read_block(direct, size)
+    elif CONST_MEMORY_BOUNDS[0] <= direct < CONST_MEMORY_BOUNDS[1]:
+      raise MemoryError("Not implemented")
+    elif POINTER_MEMORY_BOUND[0] <= direct < POINTER_MEMORY_BOUND[1]:
+      real_addr = self.pointer_memory.read_block(direct, size)
       return self.read(real_addr)
 
   def get_current_memory(self):

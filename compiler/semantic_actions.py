@@ -156,6 +156,13 @@ class SemanticActionHandler:
       size = size * dim2
     return size
 
+  def normalize_dims_for_quad(self, dims):
+    dim1 = dims[0]
+    dim2 = dims[1]
+    if dim2 == None:
+      dim2 = 1
+    return (dim1, dim2)
+
   def process_multidim_arithmetic_op(self, op, a, b):
     var_a = self.resolve_var(a)
     var_b = self.resolve_var(b)
@@ -165,14 +172,21 @@ class SemanticActionHandler:
 
     if (dima1 == dima2 and dimb1 == dimb2):
       result_type = self.validate_operation_and_get_result_type(op, a, b)
-      size = self.compute_arr_block_size(var_a.dims[0], var_a.dims[1])
       instruction = None
       if (op == '+'):
         instruction = Instruction.MATR_ADD
+        size = self.compute_arr_block_size(var_a.dims[0], var_a.dims[1])
+        result_dims = var_a.dims
       elif (op == '-'):
         instruction = Instruction.MAT_SUB
+        size = self.compute_arr_block_size(var_a.dims[0], var_a.dims[1])
+        result_dims = var_a.dims
       elif(op == '*'):
         instruction = Instruction.MAT_MULT
+        if (var_a.dims[1] != var_b.dims[0]):
+          raise Exception("Dimensions {} and {} are not compatible for matrix multiplications".format(var_a.dims, var_b.dims))
+        size = var_a.dims[0] * var_b.dims[1]
+
       else:
         raise Exception("Operation {} not supported for arrays or matrices".format(op))
 
@@ -182,10 +196,15 @@ class SemanticActionHandler:
         addr=self.allocate_block(type=result_type, size=size, scope=self.current_scope),
         dims=var_a.dims)
       self.current_local_var_table[result_temp_var.name] = result_temp_var
-      self.quad_list.add_quadd(instruction, (var_a.addr, size), (var_b.addr, size), (result_temp_var.addr, size))
+      a_dims = self.normalize_dims_for_quad(var_a.dims)
+      b_dims = self.normalize_dims_for_quad(var_b.dims)
+      c_dims = self.normalize_dims_for_quad(result_temp_var.dims)
+      self.quad_list.add_quadd(instruction,
+        (var_a.addr, a_dims[0], a_dims[1]),
+        (var_b.addr, b_dims[0], b_dims[1]),
+        (result_temp_var.addr, c_dims[0], c_dims[1]))
 
       return (result_temp_var.name, None, None)
-
 
   #estatutos
   def consume_arithmetic_op(self, op, a, b):
