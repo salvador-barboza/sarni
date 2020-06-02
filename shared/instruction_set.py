@@ -25,6 +25,8 @@ class Instruction(Enum):
   EQ = auto()
   NOTEQ = auto()
   VER = auto()
+  OR = auto()
+  AND = auto()
 
 
 def get_instr_for_op(op):
@@ -50,3 +52,7 @@ def get_instr_for_op(op):
     return Instruction.EQ
   elif op == '!=':
     return Instruction.NOTEQ
+  elif op == '|':
+    return Instruction.OR
+  elif op == '&':
+    return Instruction.AND
