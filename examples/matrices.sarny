@@ -1,0 +1,53 @@
+programa papito;
+var
+  int W, I;
+  int MatA[2][3], MatB[3][2], MatC[2][2];
+
+funcion void suma3(int w)
+{
+}
+
+principal() {
+  W = 0;
+  I = 0;
+
+  MatA[0][0] = 1;
+  MatA[0][1] = 2;
+  MatA[0][2] = 3;
+  MatA[1][0] = 4;
+  MatA[1][1] = 5;
+  MatA[1][2] = 6;
+
+  MatB[0][0] = 10;
+  MatB[0][1] = 11;
+  MatB[1][0] = 20;
+  MatB[1][1] = 21;
+  MatB[2][0] = 30;
+  MatB[2][1] = 31;
+  MatC = MatA * MatB;
+
+  escribe("[", MatC[0][0], ",",  MatC[0][1], "]\n");
+  escribe("[", MatC[1][0], ",",  MatC[1][1], "]\n");
+
+  MatC[0][0] = 1;
+  MatC[0][1] = 2;
+  MatC[1][0] = 3;
+  MatC[1][1] = 4;
+
+  escribe("Determinante de matriz: ", MatC$, "\n");
+  MatA = MatB¡;
+
+  escribe(MatB[0][0], ",");
+  escribe(MatB[0][1], "\n");
+  escribe(MatB[1][0], ",");
+  escribe(MatB[1][1], "\n");
+  escribe(MatB[2][0], ",");
+  escribe(MatB[2][1], "\n\n");
+
+  escribe(MatA[0][0], ",");
+  escribe(MatA[0][1], ",");
+  escribe(MatA[0][2], "\n");
+  escribe(MatA[1][0], ",");
+  escribe(MatA[1][1], ",");
+  escribe(MatA[1][2]);
+}

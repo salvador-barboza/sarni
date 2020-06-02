@@ -35,6 +35,7 @@ class Instruction(Enum):
   MULT_DIM_ASSIGN = auto()
   DETERMINANTE = auto()
   INVERSA = auto()
+  TRANSPOSE = auto()
 
 
 

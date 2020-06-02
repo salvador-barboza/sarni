@@ -314,7 +314,8 @@ class CalcParser(Parser):
       return self.action_handler.process_determinante(p.lista_id)
 
     @_('lista_id "¡"' )
-    def transpuesta(self, p): pass
+    def transpuesta(self, p):
+      return self.action_handler.process_transpose(p.lista_id)
 
     @_('lista_id "?"' )
     def inversa(self, p): pass

@@ -158,6 +158,17 @@ class VM:
       mat_a = self.read_block(a_addr, a_size)
       mat_a = numpy.reshape(mat_a, (a_dim1, a_dim2), order='C')
       self.write(C, numpy.linalg.det(mat_a))
+    elif instruction == Instruction.TRANSPOSE:
+      (a_addr, a_dim1, a_dim2) = A
+      (c_addr, c_dim1, c_dim2) = C
+      size = a_dim1 * a_dim2
+
+      mat_a = self.read_block(a_addr, size)
+      mat_a = numpy.reshape(mat_a, (a_dim1, a_dim2), order='C')
+      res = mat_a.transpose().reshape(size)
+
+      for i in range(0, size):
+        self.write(c_addr + i, res[i])
 
     frame.IP+=1
 
