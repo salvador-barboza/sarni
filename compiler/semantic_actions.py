@@ -535,3 +535,6 @@ class SemanticActionHandler:
         raise Exception('TYPE MISMATCH. {} can\'t be assigned to {} function'.format(return_value,expected_type))
     elif return_value != None:
       raise Exception('Void function can not return a value.')
+
+    self.current_scope = "global"
+    self.current_local_var_table = dict()
