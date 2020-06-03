@@ -9,5 +9,5 @@ vm = VM(
   constants=compiler_output.constants,
   func_dir=compiler_output.func_dir)
 
-vm.__inspect__()
+# vm.__inspect__()
 vm.run()

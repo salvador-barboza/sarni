@@ -11,6 +11,8 @@ class Frame:
   memory: MemoryBlock
 
 class VM:
+  debug_mode = False
+
   global_memory = MemoryBlock(start=GLOBAL_MEMORY_BOUNDS[0], end=GLOBAL_MEMORY_BOUNDS[1])
   pointer_memory = MemoryBlock(start=POINTER_MEMORY_BOUND[0], end=POINTER_MEMORY_BOUND[1])
 
@@ -27,6 +29,7 @@ class VM:
   def __inspect__(self):
     print(self.constant_memory)
     print(self.func_dir)
+    self.debug_mode = True
 
     i = 0
     for quad in self.quads:
@@ -41,6 +44,10 @@ class VM:
   def next_instruction(self):
     frame = self.get_current_frame()
     (instruction, A, B, C) = self.quads[frame.IP]
+
+    if (self.debug_mode):
+      print(">>>", frame.IP, instruction, A, B, C, "<<<")
+      input()
 
     if instruction == Instruction.PLUS:
       self.write(C, self.read(A) + self.read(B))

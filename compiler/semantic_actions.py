@@ -25,9 +25,9 @@ class SemanticActionHandler:
       if (type(v) == tuple):
         var_id = v[0]
 
-      var = self.global_var_table.get(var_id)
+      var = self.current_local_var_table.get(var_id)
       if (var == None):
-        var = self.current_local_var_table.get(var_id)
+        var = self.global_var_table.get(var_id)
       if (var == None):
         var = self.pointer_table.get(var_id)
       return var
@@ -423,9 +423,7 @@ class SemanticActionHandler:
 
     if(return_t != 'void'):
       var_func = "var_func_" + scope
-      self.current_scope = 'global'
-      addr = self.get_addr(VarType(return_t), scope=self.current_scope)
-      self.current_scope = scope
+      addr = self.get_addr(VarType(return_t), scope='global')
       self.global_var_table[var_func] = TuplaTablaVariables(
         name=var_func,
         type=VarType(return_t),

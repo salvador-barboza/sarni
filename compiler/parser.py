@@ -43,15 +43,12 @@ class CalcParser(Parser):
     @_('"(" expresion ")"')
     def factor(self, p): return p[1]
 
-    @_('lista_id', 'ENTERO', 'DECIMAL')
+    @_('lista_id', 'ENTERO', 'DECIMAL', 'llamada_funcion')
     def factor(self, p): return p[0]
     # END factor
 
     # START expresion
-    @_('exp', 'llamada_funcion')
-    def expresion(self, p): return p[0]
-
-    @_('determinante', 'transpuesta', 'inversa')
+    @_('exp', 'determinante', 'transpuesta', 'inversa')
     def expresion(self, p): return p[0]
 
     @_('exp "<" exp',
