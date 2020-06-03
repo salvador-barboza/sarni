@@ -1,4 +1,4 @@
-programa papito;
+programa patito;
 var
   int W, I;
   int  Arreglo2[8][10], ArregloA[10], ArregloB[10], ArregloC[10];

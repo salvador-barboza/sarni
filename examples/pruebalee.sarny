@@ -1,4 +1,4 @@
-programa papito;
+programa patito;
 var int A, B, C;
 
 principal() {
