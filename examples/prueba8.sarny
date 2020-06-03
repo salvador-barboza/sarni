@@ -1,22 +1,21 @@
-programa matrixop;
+programa matrixmult;
 var
-	int A[2][2], B[2][2], C[2][2];
+	int MatA[2][2], MatB[2][2], MatC[2][2];
 
 principal(){
-	A[0][0] = 1;
-	A[0][1] = 2;
-	A[1][0] = 3;
-	A[1][1] = 4;
 
-	B[0][0] = 1;
-	B[0][1] = 2;
-	B[1][0] = 3;
-	B[1][1] = 4;
-  	
-    C = A + B;
+	MatA[0][0] = 1;
+	MatA[0][1] = 2;
+	MatA[1][0] = 4;
+	MatA[1][1] = 5;
 
-    escribe(C[0][0]);
-    escribe(C[0][1]);
-    escribe(C[1][0]);
-    escribe(C[1][1]);
+	MatB[0][0] = 10;
+	MatB[0][1] = 11;
+	MatB[1][0] = 20;
+	MatB[1][1] = 21;
+
+	MatC = MatA - MatB;
+
+    escribe("[", MatC[0][0], ",",  MatC[0][1], "]\n");
+  	escribe("[", MatC[1][0], ",",  MatC[1][1], "]\n");
 }

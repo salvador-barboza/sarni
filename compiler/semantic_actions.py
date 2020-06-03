@@ -227,7 +227,12 @@ class SemanticActionHandler:
     var_a = self.resolve_var(a)
     var_b = self.resolve_var(b)
 
-    return not (var_a == None or var_b == None or var_a.dims == (None, None) or var_b.dims == (None, None))
+    if var_a == None or var_a.dims == (None, None):
+      return False
+    if var_b == None or var_b.dims == (None, None):
+      return False
+
+    return a[1] == None and a[2] == None
 
   """
   Auxiliar que se utiliza para calcular el tamaño de un bloque a partir de 2 dimensiones.

@@ -221,23 +221,26 @@ class VM:
       Para la suma, solamente se recorren los espacios y se suma cada elemento de A y B
       y se guarda en C.
       """
-      (a_addr, a_size, _) = A
-      (b_addr, b_size, _) = B
-      (c_addr, c_size, _) = C
+      (a_addr, a_dim1, a_dim2) = A
+      (b_addr, b_dim1, b_dim2) = B
+      (c_addr, c_dim1, c_dim2) = C
 
+      size = a_dim1 * a_dim2
 
-      for i in range(0, a_size):
+      for i in range(0, size):
         self.write(c_addr + i, self.read(a_addr + i) + self.read(b_addr + i))
     elif instruction == Instruction.MAT_SUB:
       """
       De la misma forma que en la suma, los cuadruplos contienen la direccion y tamaño de cada matriz.
       Y de igual manera, se resta cada elemento de A con B y se guarda en C.
       """
-      (a_addr, a_size, _) = A
-      (b_addr, b_size, _) = B
-      (c_addr, c_size, _) = C
+      (a_addr, a_dim1, a_dim2) = A
+      (b_addr, b_dim1, b_dim2) = B
+      (c_addr, c_dim1, c_dim2) = C
 
-      for i in range(0, a_size):
+      size = a_dim1 * a_dim2
+
+      for i in range(0, size):
         self.write(c_addr + i, self.read(a_addr + i) - self.read(b_addr + i))
 
     elif instruction == Instruction.MAT_MULT:
