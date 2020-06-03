@@ -4,14 +4,16 @@ var
 
 funcion int fibrecursivo(int n)
 {
-	si (n ==  0 | n == 1) entonces {
-		regresa 1;
+	si ((n ==  0) | (n == 1)) entonces {
+		regresa n;
 	} sino {
 		regresa fibrecursivo(n - 1) + fibrecursivo(n - 2);
 	}
+
+	regresa 0;
 }
 
 principal(){
-lee(n);
-escribe(fibrecursivo(n));
+	lee(n);
+	escribe(fibrecursivo(n));
 }

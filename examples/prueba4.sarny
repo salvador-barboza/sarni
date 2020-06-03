@@ -5,26 +5,27 @@ var
 funcion int fibciclico(int n)
 var int ant1, ant2 , actual, i;
 {
-    ant1 = 0;
+	ant1 = 1;
 	ant2 = 1;
-    si (n == 1) entonces {
-        regresa 0;
-    }
-	
+
+	si ((n == 1) | (n == 0)) entonces {
+			regresa n;
+	}
+
 	si (n == 2) entonces {
 		regresa 1;
 	} sino {
- 
-		desde i = 1 hasta n hacer{
-		    actual = ant1 + ant2;
-		    ant2 = ant1;
-		    ant1 = actual;
+		desde i = 2 hasta n hacer {
+			actual = ant1 + ant2;
+			ant2 = ant1;
+			ant1 = actual;
 		}
 	}
+
 	regresa ant2;
 }
 
-principal(){
-lee(n);
-escribe(fibciclico(n),"\n");
+principal() {
+	lee(n);
+	escribe(fibciclico(n),"\n");
 }

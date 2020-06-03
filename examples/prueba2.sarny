@@ -3,19 +3,18 @@ var
 	int n;
 
 funcion int facciclico(int n)
-var
-    int i, acum;
+var int i, acum;
 {
-    acum = 1;
+	acum = 1;
 
-	desde i = 2 hasta n hacer{
+	desde i = 2 hasta n hacer {
 		acum = acum * i;
 	}
+
 	regresa acum;
 }
 
 principal(){
-
-lee(n);
-escribe(facciclico(n), "\n");
+	lee(n);
+	escribe(facciclico(n), "\n");
 }

@@ -16,7 +16,7 @@ funcion int facrecursivo(int n)
 }
 
 principal() {
-  n = 5;
+  lee(n);
   n = facrecursivo(n);
   escribe(n, "\n");
 }
