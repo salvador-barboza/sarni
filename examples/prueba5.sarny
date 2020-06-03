@@ -1,6 +1,6 @@
 programa insercion;
 var
-	int n;
+	int n, i;
 	int Arreglo[10];
 
 funcion void sort(int n)
@@ -9,11 +9,11 @@ var int llave, auxiliar, i;
 	desde i = 1 hasta n  hacer{
 		llave = Arreglo[i];
 		auxiliar = i - 1;
-    escribe("antes","\n");
-		mientras( (auxiliar >= 0) & (Arreglo[auxiliar] > llave) ) haz{
-      escribe("dentro","\n");
-		  Arreglo[auxiliar + 1] = Arreglo[auxiliar];
-		  auxiliar = auxiliar - 1;
+		mientras(auxiliar >= 0) haz{
+			si (Arreglo[auxiliar] > llave)  entonces {
+				Arreglo[auxiliar + 1] = Arreglo[auxiliar];
+				auxiliar = auxiliar - 1;
+			}
     }
     Arreglo[auxiliar + 1] = llave;
 	}
@@ -22,13 +22,15 @@ var int llave, auxiliar, i;
 principal(){
 
 	n = 9;
+	escribe("Arreglo antes: ");
 	desde i = 0 hasta n hacer {
 		Arreglo[i] = n - i;
+		escribe(Arreglo[i], ",");
   }
 
   sort(n);
-
+	escribe("\nArreglo despues: ");
   desde i = 0 hasta n hacer {
-	  escribe(Arreglo[i] );
+	  escribe(Arreglo[i], ",");
   }
 }

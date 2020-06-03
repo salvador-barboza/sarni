@@ -146,7 +146,7 @@ class SemanticActionHandler:
     var_a = self.resolve_var(a)
     var_b = self.resolve_var(b)
 
-    return not (var_a == None or var_b == None or var_a.dims == (None, None) or var_b.dims == (None, None))
+    return var_a == None and var_b == None and not (var_a.dims == (None, None) or var_b.dims == (None, None))
 
 
   def compute_arr_block_size(self, dim1, dim2):
