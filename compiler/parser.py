@@ -4,9 +4,15 @@ from compiler.dirfunciones import TuplaDirectorioFunciones, ReturnType, \
 from compiler.lexer import Tokens
 from compiler.semantic_actions import SemanticActionHandler
 
+"""
+Esta clase es el parser de nuestro compilador
+"""
 class CalcParser(Parser):
+    """
+    Primero se deben especificar los tokens y el simbolo inicial para el parser.
+    Ademas se define una instancia del action handler y se define la presedencia.
+    """
     tokens = Tokens
-
     start = 'programa'
 
     action_handler = SemanticActionHandler()
@@ -19,6 +25,10 @@ class CalcParser(Parser):
     def __init__(self):
         self.names = { }
 
+    """
+    El resto de los metodos decorados con @_ representan un punto neuralgico. Donde sea necesario, se especificara
+    mas informacion.
+    """
     # START exp
     @_('termino')
     def exp(self, p): return p[0]
@@ -86,7 +96,6 @@ class CalcParser(Parser):
 
     #START ESTATUTO
     @_('asignacion  ";"',
-      'funciones',
       'lectura',
       'escritura',
       'decision',
@@ -193,6 +202,11 @@ class CalcParser(Parser):
 
     #START PARAMS
 
+    """
+    Para la creacion de los parametros, se recopila una lista que se conserva hasta terminar de
+    recorrer los parametros de la funcion. En este punto, se llama add_params_to_current_scope
+    para añadir los parametros al scope actual.
+    """
     @_('"(" empty ")"')
     def params(self, p): return []
 
@@ -252,6 +266,11 @@ class CalcParser(Parser):
     @_('empty')
     def varios_tipos(self, p): pass
 
+    """
+    De manera similar a los parametros, se recopila una lista que se conserva hasta terminar de
+    recorrer las diferentes variables locales de la funcion. En este punto, se llama add_variable_to_current_scope
+    para añadir todas las variables al scope actual.
+    """
     @_('tipo lista_id_aux ";"')
     def declaracion(self, p):
       self.action_handler.add_variable_to_current_scope(tipo=VarType(p.tipo), vars=p.lista_id_aux)
@@ -321,6 +340,10 @@ class CalcParser(Parser):
       return self.action_handler.process_inverse(p.lista_id)
     #END MATOP
 
+    """
+    Esta funcion se utiliza para definir que hacer en caso de un error.
+    Nosotros escogimos terminar la ejecucion del programa.
+    """
     def error(self, p):
       print('Syntax error at line {}'.format(p.lineno))
       quit()

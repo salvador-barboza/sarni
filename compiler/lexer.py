@@ -2,7 +2,13 @@ from sly import Lexer
 from compiler.dirfunciones import TuplaDirectorioFunciones, ReturnType, TuplaTablaVariables, VarType
 from compiler.semantic_actions import SemanticActionHandler
 
+"""
+Lexer para el compilador
+"""
 class CalcLexer(Lexer):
+    """
+    Primero se especifican todos los tokens que exisen en el leguaje
+    """
     tokens = {
       ID,
       PROGRAMA,
@@ -53,7 +59,7 @@ class CalcLexer(Lexer):
                  '[', ']', '{', '}', '(', ')',
                  ',', ';', '.', ':',
                  '>', '<', '&', '|',
-                 "'", '"', '%', 
+                 "'", '"', '%',
                  '$', '¡', '?'
                 }
 
@@ -82,6 +88,10 @@ class CalcLexer(Lexer):
     SML_EQ = r'<='
     DIFERENTE = r'!='
 
+    """
+    Para los tokens que no sean una literal o que necesiten mas procesamiento,
+    se puede añadir un metodo decorado con el metodo @_
+    """
     @_(r'\"[^\".]*\"')
     def LETRERO(self, t):
       t.value = "@"+t.value
@@ -107,11 +117,14 @@ class CalcLexer(Lexer):
       t.value = "'" + t.value[1] + "'"
       return t
 
-
     @_(r'\n+')
     def newline(self, t):
         self.lineno += t.value.count('\n')
 
+    """
+    En el metodo error es donde se define que se imprimira en caso de que haya
+    un error de sintaxis en el codigo de entrada.
+    """
     def error(self, t):
         print("Illegal character '%s'" % t.value[0])
         self.index += 1
