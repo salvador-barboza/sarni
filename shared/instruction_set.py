@@ -1,5 +1,9 @@
 from enum import Enum, auto
 
+"""
+Este Enum contiene todas las instrucciones que pueden usarse en nuestro compilador.
+Se comparten en el modulo compiler y en vm.
+"""
 class Instruction(Enum):
   JUMP = auto()
   JUMPF = auto()
@@ -38,7 +42,10 @@ class Instruction(Enum):
   TRANSPOSE = auto()
 
 
-
+"""
+Esta funcion se utiliza para mapear entre un operador y su respectiva operacion para la
+maquina virtual.
+"""
 def get_instr_for_op(op):
   if op == '+':
     return Instruction.PLUS
