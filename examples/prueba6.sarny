@@ -2,16 +2,17 @@ programa binarySearch;
 var
 	int n, x;
 	int Arreglo[10];
-	
+
 
 funcion int busqueda(int n, int ini, int ult, int x)
 var int auxiliar;
 {
-	mientras( ini <= ult) haz{
+	mientras( ini <= ult) haz {
+		escribe(ini, ' ', ult, '\n);
 
 		auxiliar = ini + (ult - 1) / 2;
 
-		si ( Arreglo[auxiliar] == x ){
+		si ( Arreglo[auxiliar] == x ) entonces {
 			regresa auxiliar;
 		}
 
@@ -20,8 +21,9 @@ var int auxiliar;
 		} sino {
 			ult = auxiliar - 1;
 		}
-    }
-    regresa -1;
+	}
+
+	regresa 1;
 }
 
 principal(){
