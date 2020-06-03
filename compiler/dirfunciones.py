@@ -43,7 +43,6 @@ name: el nombre de la funcion
 return_type: es el tipo de retorno de la funcion.
 param_table: esta lista guarda los parametros para poder validar las llamadas a la funcion.
 param_pointers: esta lista guarda las direcciones de los parametros de la funcion.
-local_variable_count: guarda el numero de variables locales que fueron definidas en la funcion.
 start_pointer: guarda en cual cuadruplo empieza esta funcion.
 """
 @dataclass
@@ -52,5 +51,4 @@ class TuplaDirectorioFunciones:
     return_type: ReturnType
     param_table: list
     param_pointers: list
-    local_variable_count: int
     start_pointer: int
