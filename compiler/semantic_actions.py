@@ -76,14 +76,14 @@ class SemanticActionHandler:
         addr=self.get_pointer_addr(var_entry.type))
 
     if dim2 == None:
-      if self.resolve_primitive_type(dim1) == 'int':
+      if self.resolve_primitive_type(dim1) == 'int' or self.resolve_primitive_type(dim1) == 'float':
         self.quad_list.add_quadd(Instruction.VER, dim1_addr, 0, var_entry.dims[0])
         self.quad_list.add_quadd(Instruction.ADD_ADDR, var_entry.addr, dim1_addr, pointer.addr)
       else:
-        raise Exception('Indexes must be integer')
+        raise Exception('Indexes must be integer or float')
     else:
-      if self.resolve_primitive_type(dim1) == 'int':
-        if self.resolve_primitive_type(dim2) == 'int':
+      if self.resolve_primitive_type(dim1) == 'int' or self.resolve_primitive_type(dim1) == 'float':
+        if self.resolve_primitive_type(dim2) == 'int' or self.resolve_primitive_type(dim2) == 'float':
           dim2_addr = self.resolve_address(dim2)
           self.quad_list.add_quadd(Instruction.VER, dim1_addr, 0, var_entry.dims[0])
           res = self.consume_arithmetic_op("*", var_entry.dims[1], dim1)
@@ -92,9 +92,9 @@ class SemanticActionHandler:
           res_addr = self.resolve_address(res)
           self.quad_list.add_quadd(Instruction.ADD_ADDR, var_entry.addr, res_addr, pointer.addr)
         else:
-          raise Exception('Indexes must be integer')
+          raise Exception('Indexes must be integer or float')
       else:
-        raise Exception('Indexes must be integer')
+        raise Exception('Indexes must be integer or float')
     return pointer.addr
 
   def resolve_address(self, s):
@@ -306,7 +306,10 @@ class SemanticActionHandler:
     primitive_target = self.resolve_primitive_type(target)
     primitive_value = self.resolve_primitive_type(value)
 
-    if (primitive_target != primitive_value):
+    is_numeric_assignment = (primitive_target == 'int' and primitive_value == 'float') or \
+      primitive_target == 'float' and primitive_value == 'int'
+
+    if (not is_numeric_assignment and primitive_target != primitive_value):
       raise Exception('TYPE MISMATCH. {} can\'t be assigned to {}'.format(primitive_value, primitive_target))
 
     if (self.check_multidimensional_op(target, value)):

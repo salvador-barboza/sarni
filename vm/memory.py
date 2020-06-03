@@ -15,9 +15,9 @@ class MemoryBlock:
     real_addr = direct - self.start
 
     if self.is_in_int_range(real_addr):
-      self.int[self.get_int_addr(real_addr)] = value
+      self.int[self.get_int_addr(real_addr)] = int(value)
     elif self.is_in_float_range(real_addr):
-      self.float[self.get_float_addr(real_addr)] = value
+      self.float[self.get_float_addr(real_addr)] = float(value)
     elif self.is_in_char_range(real_addr):
       self.char[self.get_char_addr(real_addr)] = value
     elif self.is_in_bool_range(real_addr):

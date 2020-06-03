@@ -45,9 +45,9 @@ class VM:
     frame = self.get_current_frame()
     (instruction, A, B, C) = self.quads[frame.IP]
 
-    if (self.debug_mode):
-      print(">>>", frame.IP, instruction, A, B, C, "<<<")
-      input()
+    # if (self.debug_mode):
+    #   print(">>>", frame.IP, instruction, A, B, C, "<<<")
+    #   # input()
 
     if instruction == Instruction.PLUS:
       self.write(C, self.read(A) + self.read(B))
@@ -78,8 +78,9 @@ class VM:
     elif instruction == Instruction.ADD_ADDR:
       self.pointer_memory.write(C, A + self.read(B))
     elif instruction == Instruction.VER:
-      if not B <= self.read(A) < C:
-        raise Exception('index {} out of range {}-{}'.format(self.read(A), B, C))
+      int_index = int(self.read(A))
+      if not B <= int_index < C:
+        raise Exception('index {} out of range {}-{}'.format(int_index, B, C))
     elif instruction == Instruction.WRITE:
       val_to_print = self.read(C)
       if (type(val_to_print) == str):

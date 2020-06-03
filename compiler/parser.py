@@ -215,6 +215,8 @@ class CalcParser(Parser):
     @_('function_init params vars bloque end_funcion_declaration funciones_aux')
     def funciones(self, p):
       self.action_handler.func_return(p.function_init, p.bloque)
+    @_('empty')
+    def funciones(self, p): pass
 
     @_('empty')
     def end_funcion_declaration(self, p):
