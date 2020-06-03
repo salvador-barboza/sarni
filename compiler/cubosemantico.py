@@ -1,3 +1,7 @@
+"""
+Esta clase, guarda el cubo semantico para la aplicacion.
+El metodo typematch toma ambos operadores y retorna el tipo del resultado.
+"""
 class CuboSemantico:
   operando = {"int": 0,"float": 1, "char": 2,"bool": 3}
   operador = {"+": 0,"-": 1,"/": 2,"*": 3,"<": 4,">": 5,"<=":6,">=":7,"==": 8,"!=": 9,"&":10,"|":11,"%":12}
