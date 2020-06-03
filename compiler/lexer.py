@@ -13,6 +13,7 @@ class CalcLexer(Lexer):
       ID,
       PROGRAMA,
       PRINCIPAL,
+      UMINUS,
       # Variables
       VAR,
       INT,

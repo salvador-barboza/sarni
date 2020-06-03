@@ -2,8 +2,7 @@ programa papito;
 var int A, B, C;
 
 principal() {
-  lee(A, B, C);
-  escribe("A: ", A, "\n");
-  escribe("B: ", B, "\n");
-  escribe("C ", C, "\n");
+  A = -10;
+  B = 1;
+  escribe(A + B);
 }

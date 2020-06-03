@@ -19,7 +19,8 @@ class CalcParser(Parser):
 
     precedence = (
         ('left', '+', '-'),
-        ('left', '*', '/','%')
+        ('left', '*', '/','%'),
+        ('right', UMINUS)
       )
 
     def __init__(self):
@@ -33,8 +34,14 @@ class CalcParser(Parser):
     @_('termino')
     def exp(self, p): return p[0]
 
+    """
+    Regla especial para manejar numeros negativos
+    """
+    @_('"-" factor %prec UMINUS')
+    def termino(self, p): return -p.factor
+
     @_('termino "+" exp',
-      'termino "-" exp',)
+      'termino "-" exp')
     def exp(self, p): return self.action_handler.consume_arithmetic_op(p[1], p[0], p[2])
     # END exp
 
