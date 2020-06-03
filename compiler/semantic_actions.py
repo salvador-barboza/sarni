@@ -4,10 +4,28 @@ from compiler.dirfunciones import TuplaTablaVariables, VarType, TuplaDirectorioF
 from compiler.memory import VirtualMemoryManager
 from shared.instruction_set import Instruction, get_instr_for_op
 
+"""
+Esta clase se utiliza para manejar las acciones de los puntos neuralgicos del parser.
+Para realizar esto, esta clase debe guardar varias partes del "estado" del parser. Estas partes son:
+quad_list: una instancia de la lista de cuadruplos
+jump_stack: una pila de saltos para manejar estatutos no lineales
+cubo_seman: una instancia del cubo semantico
+global_var_table: este es un diccionario que asocia [nombre_de_variable] -> [TuplaTablaVariables] y
+representa las variables que han sido declaradas en el scope global.
+current_local_var_table: este es un diccionario que asocia [nombre_de_variable] -> [TuplaTablaVariables] y
+representa las variables que han sido declaradas en el scope local actual. Cada vez que se termina de analizar una
+funcion, esta tabla se destruye.
+current_scope: guarda el nombre del scope actual. Este puede ser "global" y al momento de estar dentro de una funcion,
+este guardará el nombre de la funcion que se esta analizando.
+param_table: esta tabla se utiliza para guardar una relacion entre una funcion  y los parametros que pude recibir.
+Esto se utiliza para validar que una llamada a una funcion se esta haciendo con el numero y tipo de parametros correcto.
+constant_map: este diccionario asocia una costante (cualquier numero, letrero, etc) a su direccion en la memoria de constantes.
+pointer_table: este diccionario asocia unn pointer a su direccion en la memoria de pointers.
+virtual_memory_manager: una instancia de virtual memory manager, utilizado para asignar direcciones.
+"""
 class SemanticActionHandler:
   quad_list = QuadrupleList()
   jump_stack = []
-  last_op = ''
   cubo_seman = CuboSemantico()
   global_var_table = dict()
   current_local_var_table: dict()
@@ -17,9 +35,19 @@ class SemanticActionHandler:
   pointer_table = dict()
   virtual_memory_manager = VirtualMemoryManager()
 
+
+  """
+  Determina si un elemento es de tipo arreglo o no
+  """
   def is_array(self, s):
     return type(s) == tuple and s[1] != None
 
+  """
+  Gran parte del funcionamiento de nuestro parser se basa en los metodos de resolucion de variables.
+  Este metodo, toma un identificador en el formato (id, dim1, dim2). o id. Con base a esto,
+  busca el identificador primero en la tabla de variables locales, despues las globales y al final en la de pointers.
+  Retorna None si la variable no ha sido encontrada.
+  """
   def resolve_var(self, v):
       var_id = v
       if (type(v) == tuple):
@@ -32,6 +60,11 @@ class SemanticActionHandler:
         var = self.pointer_table.get(var_id)
       return var
 
+  """
+  Este metodo tambien es clave para el funcionamiento del compilador. Toma un identificador de variable,
+  despues determina el tipo de la variable y depsues utiliza el metodo resolve_var para obtener la entrada
+  de la tabla de variables local o global y asi poder obtener el tipo de retorno.
+  """
   def resolve_primitive_type(self, s):
     var_id = s
     if (type(s) == tuple):
@@ -48,24 +81,52 @@ class SemanticActionHandler:
       else:
         raise Exception('variable "{}" was not declared in the current scope.'.format(var_id))
 
+
+  """
+  Obtiene la siguiente direccion disponible para el scope solicitado (global o local).
+  """
   def get_addr(self, type, scope):
     if scope == 'global':
       return self.virtual_memory_manager.global_addr.next(type)
     else:
       return self.virtual_memory_manager.local_addr.next(type)
 
+  """
+  Obtiene un bloque de memoria en el scope solicitado (global o local).
+  """
   def allocate_block(self, type, scope, size):
     if scope == 'global':
       return self.virtual_memory_manager.global_addr.allocate_block(type, size)
     else:
       return self.virtual_memory_manager.local_addr.allocate_block(type, size)
 
+  """
+  Obtiene la siguiente direccion temporal disponible.
+  """
   def get_temp_addr(self, type):
     return self.virtual_memory_manager.temp_addr.next(type)
 
+  """
+  Obtiene la siguiente direccion de apuntador disponible.
+  """
   def get_pointer_addr(self, type):
     return self.virtual_memory_manager.pointer_addr.next(type)
 
+  """
+  Este metood se utiliza para obtener la direccion de un elemento de una variable multidimeniconal.
+  Para arreglos:
+  Se obtiene una direccion temporal para realizar el calculo de la direcion base + la casilla.
+  Se escriben los cuadrplos VER y ADD_ADDR.
+  Para matrices:
+  Se obtiene una direccion temporal para realizar el calculo de la direcion base + la casilla.
+  Se obtiene otra direccion temporal para realizar el calculo de la direcion base + la casilla.
+  Se escribe el cuadruplo VER para la primera dimension requerida.
+  Se genera d1*s1
+  Se obtiene el cuadruplo VER para la segunda dimension
+  Se hace la suma de d1*s1 + d2.
+  Se agrega el cuadruplo ADD_ADDR con el resultado de la operacion anterior.
+  En ambos casos, se valida que la expresion de la dimension sea float (que se trunca a un int) o un int.
+  """
   def resolve_array_addr(self, arr, var_entry):
     (name, dim1, dim2) = arr
 
@@ -97,6 +158,12 @@ class SemanticActionHandler:
         raise Exception('Indexes must be integer or float')
     return pointer.addr
 
+  """
+  Este metodo se utiliza para resolver la direccion de un identificador o valor. Primero se intenta buscar
+  en las tablas de variables local y global. En caso de no encontrar un valor, en estas tablas, y
+  donde ademas el valor a encontrar es  un valor como int o float, entonces se busca o crea una
+  entrada en la tabla de constantes para este valor.
+  """
   def resolve_address(self, s):
     var = self.resolve_var(s)
     is_array = self.is_array(s)
@@ -113,6 +180,11 @@ class SemanticActionHandler:
       return const_addr
 
 
+  """
+  Este es otro metodo que se utiliza para la resolucion de valores. En este caso, se
+  busca la direccion para una constante c. En caso de existir, se devuelve su direccion.
+  De lo contrario, se crea una entrada en la tabla de constante y se retorna esa direccion.
+  """
   def get_or_create_constant_addr(self, c):
     try:
       addr = self.constant_map.get(str(c))
@@ -131,6 +203,10 @@ class SemanticActionHandler:
     except:
       return None
 
+  """
+  Este metodo auxiliar se utiliza para validar si una operacion op es valida entre operando a y b.
+  Para esto, se utiliza el cubo semantico miembro de la clase y se ejecuta el metodo typematch, el cual arroja si el resultado de la operacion es "error".
+  """
   def validate_operation_and_get_result_type(self, op, a, b):
       primitive_a = self.resolve_primitive_type(a)
       primitive_b = self.resolve_primitive_type(b)
@@ -142,19 +218,31 @@ class SemanticActionHandler:
 
       return VarType(result_type)
 
+  """
+  Revisa si una operacion es sobre una variable multidimencionada o sobre
+  solo un elemento (si ambas dimenciones requeridas son None y
+  las variables son arreglos o matrices, entonces es una operacion sobre amatriz o arreglo).
+  """
   def check_multidimensional_op(self, a, b):
     var_a = self.resolve_var(a)
     var_b = self.resolve_var(b)
 
     return var_a == None and var_b == None and not (var_a.dims == (None, None) or var_b.dims == (None, None))
 
-
+  """
+  Auxiliar que se utiliza para calcular el tamaño de un bloque a partir de 2 dimensiones.
+  """
   def compute_arr_block_size(self, dim1, dim2):
     size = dim1
     if (dim2 != None):
       size = size * dim2
     return size
 
+  """
+  Metodo que prepara las dimensiones reales de un arreglo o matriz.
+  e.g. si el arreglo tiene dims (10, None), puede verse como
+  10 x 1, entonces se retornaria (10, 1).
+  """
   def normalize_dims_for_quad(self, dims):
     dim1 = dims[0]
     dim2 = dims[1]
@@ -162,6 +250,18 @@ class SemanticActionHandler:
       dim2 = 1
     return (dim1, dim2)
 
+
+  """
+  Este metodo se encargade realizar operaciones +, -  y * en matrizes.
+  Primero se valida que ambos operandos sean matrices. En caso de serlo,
+  se confirma que las dimensiones de las matrices o arreglos sean compatibles.
+  Despues, se procede a validar el tipo de operacion y se aloca un bloque
+  del tamaño apropiado para guardar el resultado.
+  Despues se crea una variable temporal  del tamaño previamente determinado (t1).
+  Despues, se toma este temporal t1 y se crea una tupla especial con el siguiente formato:
+  (instruccion, (a_addr, a_dim1, a_dim2), (b_addr, b_dim1, b_dim2), (c_addr, c_dim1, c_dim2))
+  y al final se retorna le nombre de la variable tempral qe contiene el resultado.
+  """
   def process_multidim_arithmetic_op(self, op, a, b):
     var_a = self.resolve_var(a)
     var_b = self.resolve_var(b)
@@ -206,6 +306,14 @@ class SemanticActionHandler:
       return (result_temp_var.name, None, None)
 
 
+  """
+  Esta funcion se utiliza para procesar el punto neuralgico del determinante.
+  Primero, se resuelve la referencia a la variable utilizando resolve_var y
+  se aloca una variable de tipo float para guardar el resultado.
+  Despues, se añade un cuadruplo con el formato
+  (Instruction.DETERMINANTE, (addr, dim1, dim2), addr_del_temporal).
+  Al final, se retorna el nombre de esta variable temporal.
+  """
   def process_determinante(self, var):
     var_ref = self.resolve_var(var)
     result_temp_var = TuplaTablaVariables(
@@ -218,6 +326,14 @@ class SemanticActionHandler:
     self.quad_list.add_quadd(Instruction.DETERMINANTE, (var_ref.addr, dims[0], dims[1]), -1, result_temp_var.addr)
     return result_temp_var.name
 
+  """
+  Esta funcion se utiliza para procesar el punto neuralgico de matrices transpuestas.
+  Primero, se resuelve la referencia a la variable utilizando resolve_var y
+  se aloca una variable de del mismo tamaño que la matriz original.
+  Despues, se añade un cuadruplo con el formato
+  (Instruction.TRANSPOSE, (addr, dim1, dim2), -1, (result_addr, result_dim1, result_dim2)).
+  Al final, se retorna el nombre de esta variable temporal.
+  """
   def process_transpose(self, var):
     var_ref = self.resolve_var(var)
     size = self.compute_arr_block_size(var_ref.dims[0], var_ref.dims[1])
@@ -237,6 +353,14 @@ class SemanticActionHandler:
 
     return result_temp_var.name
 
+  """
+  Esta funcion se utiliza para procesar el punto neuralgico de matriz inversa.
+  Primero, se resuelve la referencia a la variable utilizando resolve_var y
+  se aloca una variable de del mismo tamaño que la matriz original.
+  Despues, se añade un cuadruplo con el formato
+  (Instruction.INVERSA, (addr, dim1, dim2), -1, (result_addr, result_dim1, result_dim2)).
+  Al final, se retorna el nombre de esta variable temporal.
+  """
   def process_inverse(self, var):
     var_ref = self.resolve_var(var)
     if (var_ref.type != VarType.FLOAT):
@@ -260,6 +384,16 @@ class SemanticActionHandler:
     return result_temp_var.name
 
   #estatutos
+  """
+  Esta funcion se utiliza para procesar el punto neuralgico paraoperaciones aritmeticas.
+  Primero determina si esta operacion es sobre variables multidimensinoadas o
+  sobre variables normales. Si no es multidimensionada, entonces se determina el
+  tipo de resultado utilizando  el metodo validate_operation_and_get_result_type,
+  y se crea una entrada en la tabla de variables local para guardar una
+  variable temporal que guarde el resultado de la operacion.
+  Al final se añade un cuadruplo con la escturctura:
+  (Instruccion, addr_de_a, addr_de_b, addr_del_temporal)
+  """
   def consume_arithmetic_op(self, op, a, b):
       if (self.check_multidimensional_op(a, b)):
         return self.process_multidim_arithmetic_op(op, a, b)
@@ -279,6 +413,14 @@ class SemanticActionHandler:
       self.quad_list.add_quadd(get_instr_for_op(op), a_addr, b_addr, result_temp_var.addr)
       return result_temp_var.name
 
+  """
+  Esta funcion se utiliza para procesar el punto neuralgico paraoperaciones relacionales.
+  Primero se crea una variable en la tabla de variables para guardar el resultado de la
+  operacion. Despues, se valida la operacion y se obtiene la instruccion correspondiente
+  para dicha opracion.
+  Al final se añade un cuadruplo con la escturctura:
+  (Instruccion, addr_de_a, addr_de_b, addr_del_temporal)
+  """
   def consume_relational_op(self, op, a, b):
     result_temp_var = TuplaTablaVariables(
       name=self.quad_list.get_next_temp(),
@@ -294,6 +436,13 @@ class SemanticActionHandler:
     self.quad_list.add_quadd(get_instr_for_op(op), a_addr, b_addr, result_temp_var.addr)
     return result_temp_var.name
 
+
+  """
+  Esta accion se utiliza para realizar la asignacion de variables multidimencionadas.
+  E.g
+  var int Arr[10], ArrB[10];
+  Arr = Arr + ArrB;
+  """
   def process_multidim_assignment(self, target, value):
     var_a = self.resolve_var(target)
     var_b = self.resolve_var(value)
@@ -301,7 +450,11 @@ class SemanticActionHandler:
 
     self.quad_list.add_quadd(Instruction.MULT_DIM_ASSIGN, (var_b.addr, size), -1, (var_a.addr, size))
 
-
+  """
+  Esta accion se utiliza para realizar la asignacion de variables no dimencionadas.
+  Ints y floats pueden asignarse entre si, por lo que se hace una validacion
+  especial para determinar si es posible realizar esta asignacion.
+  """
   def consume_assignment(self, target, value):
     primitive_target = self.resolve_primitive_type(target)
     primitive_value = self.resolve_primitive_type(value)
@@ -321,10 +474,21 @@ class SemanticActionHandler:
     self.quad_list.add_quadd(Instruction.ASSIGN, a_addr, -1, b_addr)
     return target
 
+
+  """
+  Esta accion se utiliza para el punto neuralgico de "lee". Es muy sencilla y solo
+  agrega un cuadruplo para la instrccion READ.
+  """
   def consume_read(self, target):
     var = self.resolve_var(target)
     self.quad_list.add_quadd(Instruction.READ, 1, var.type.value, var.addr)
 
+  """
+  Esta accion se utiliza para el punto neuralgico de "escribe".  Primero, se valida
+  si lo que se esta imprimiendo es un letrero o un valir. En caso de ser un letrero, se
+  añade a la tabla de constantes. Si no, solo se resuelve la direccion a imprimir y se
+  agrega el cuadruplo.
+  """
   def consume_write(self, value):
     addr = None
     if (type(value) == str and value[0] == '"'):
@@ -420,7 +584,6 @@ class SemanticActionHandler:
       return_type=return_t,
       param_table=[],
       param_pointers=[],
-      local_variable_count = 0,
       start_pointer=self.quad_list.pointer+1)
     self.current_local_var_table = dict()
 
