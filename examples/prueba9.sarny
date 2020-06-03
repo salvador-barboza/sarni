@@ -1,0 +1,29 @@
+programa FizzBuzz;
+var
+	int n;
+funcion void fizbuz(int n)
+var int i;
+{
+    desde i = 1 hasta n hacer {
+
+		si ((i % 3 == 0) & (i % 5 == 0))entonces{
+			escribe("FizzBuzz","\n");
+		}sino{
+            si(i % 3 == 0)entonces{
+                escribe("Fizz","\n");
+            }sino{
+                si(i % 5 == 0)entonces{
+                    escribe("Buzz","\n");
+                }sino{
+                    escribe(i,"\n");
+                }
+            }
+        }
+    }
+}
+
+principal(){
+
+	lee(n);
+	fizbuz(n);
+}

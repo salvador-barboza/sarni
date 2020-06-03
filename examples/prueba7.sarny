@@ -1,0 +1,24 @@
+programa matrixmult;
+var
+	int MatA[2][3], MatB[3][2], MatC[2][2];
+
+principal(){
+
+	MatA[0][0] = 1;
+	MatA[0][1] = 2;
+	MatA[0][2] = 3;
+	MatA[1][0] = 4;
+	MatA[1][1] = 5;
+	MatA[1][2] = 6;
+
+	MatB[0][0] = 10;
+	MatB[0][1] = 11;
+	MatB[1][0] = 20;
+	MatB[1][1] = 21;
+	MatB[2][0] = 30;
+	MatB[2][1] = 31;
+	MatC = MatA * MatB;
+
+    escribe("[", MatC[0][0], ",",  MatC[0][1], "]\n");
+  	escribe("[", MatC[1][0], ",",  MatC[1][1], "]\n");
+}

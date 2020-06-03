@@ -1,11 +1,10 @@
-programa papito;
+programa facrec;
 var
   int n;
 
 funcion int facrecursivo(int n)
 {
-  escribe(n, "\n");
-
+  
   si (n > 1) entonces {
 		regresa n * facrecursivo(n - 1);
 	} sino {
