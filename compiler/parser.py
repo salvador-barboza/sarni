@@ -130,15 +130,21 @@ class CalcParser(Parser):
 
     #START LECTURA
     @_('LEE "(" lectura_aux ")" ";"')
-    def lectura(self, p): pass
+    def lectura(self, p):
+      p.lectura_aux.reverse()
+      for exp in p.lectura_aux:
+        self.action_handler.consume_read(exp)
+      pass
 
     @_('lista_id',
       'expresion')
-    def lectura_aux(self, p): self.action_handler.consume_read(p[0])
+    def lectura_aux(self, p):return [p[0]]
 
     @_('lista_id "," lectura_aux',
       'expresion "," lectura_aux')
-    def lectura_aux(self, p): self.action_handler.consume_read(p[0])
+    def lectura_aux(self, p):
+      p.lectura_aux.append(p[0])
+      return p.lectura_aux
 
     #END LECTURA
 
