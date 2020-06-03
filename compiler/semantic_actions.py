@@ -89,6 +89,7 @@ class SemanticActionHandler:
     if scope == 'global':
       return self.virtual_memory_manager.global_addr.next(type)
     else:
+      self.add_size_to_addr_size(var_type = type)
       return self.virtual_memory_manager.local_addr.next(type)
 
   """
@@ -98,6 +99,7 @@ class SemanticActionHandler:
     if scope == 'global':
       return self.virtual_memory_manager.global_addr.allocate_block(type, size)
     else:
+      self.add_size_to_addr_size(var_type = type, size = size)
       return self.virtual_memory_manager.local_addr.allocate_block(type, size)
 
   """
@@ -111,6 +113,24 @@ class SemanticActionHandler:
   """
   def get_pointer_addr(self, type):
     return self.virtual_memory_manager.pointer_addr.next(type)
+
+
+  """
+  Añade el tamaño de los elementos de memoria local a un registro del
+  directorio de variables, para calcular el uso exacto de memoria.
+  """
+  def add_size_to_addr_size(self, var_type, size = 1):
+    current_scope = self.current_scope
+    if (current_scope != 'global'):
+      curr_addr_size = self.param_table[current_scope].address_size
+      if (var_type == VarType.INT):
+        self.param_table[current_scope].address_size[0] = curr_addr_size[0] + size
+      elif (var_type == VarType.FLOAT):
+        self.param_table[current_scope].address_size[1] = curr_addr_size[1] + size
+      elif (var_type == VarType.CHAR):
+        self.param_table[current_scope].address_size[2] = curr_addr_size[2] + size
+      elif (var_type == VarType.BOOL):
+        self.param_table[current_scope].address_size[3] = curr_addr_size[3] + size
 
   """
   Este metood se utiliza para obtener la direccion de un elemento de una variable multidimeniconal.
@@ -632,6 +652,7 @@ class SemanticActionHandler:
       return_type=return_t,
       param_table=[],
       param_pointers=[],
+      address_size=[0, 0, 0, 0],
       start_pointer=self.quad_list.pointer+1)
     self.current_local_var_table = dict()
 
@@ -655,13 +676,17 @@ class SemanticActionHandler:
     for var in vars:
       (var_name, dim1, dim2) = var
       addr = None
-
       if dim1 != None and dim2 != None:
-        addr = self.allocate_block(type=var_type, scope=self.current_scope, size=dim1*dim2)
+        size=dim1*dim2
+        addr = self.allocate_block(type=var_type, scope=self.current_scope, size=size)
       elif dim1 != None:
-        addr = self.allocate_block(type=var_type, scope=self.current_scope, size=dim1)
+        size = dim1
+        addr = self.allocate_block(type=var_type, scope=self.current_scope, size=size)
       else:
+        size = 1
         addr = self.get_addr(type=var_type, scope=self.current_scope)
+
+      self.add_size_to_addr_size(var_type = var_type, size = size)
 
       self.current_local_var_table[var_name] = TuplaTablaVariables(
         name=var_name,
@@ -682,6 +707,7 @@ class SemanticActionHandler:
       addr = self.get_addr(var_type, scope=self.current_scope)
       self.param_table[self.current_scope].param_table.append(var_type.value)
       self.param_table[self.current_scope].param_pointers.append(addr)
+      self.add_size_to_addr_size(var_type = var_type)
       self.current_local_var_table[name] = TuplaTablaVariables(name=name, type=var_type, addr=addr)
 
   def end_function_declaration(self):

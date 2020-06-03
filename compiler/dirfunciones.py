@@ -44,6 +44,7 @@ return_type: es el tipo de retorno de la funcion.
 param_table: esta lista guarda los parametros para poder validar las llamadas a la funcion.
 param_pointers: esta lista guarda las direcciones de los parametros de la funcion.
 start_pointer: guarda en cual cuadruplo empieza esta funcion.
+address_size: guarda el tamaño de cada particion de memoria
 """
 @dataclass
 class TuplaDirectorioFunciones:
@@ -52,3 +53,4 @@ class TuplaDirectorioFunciones:
     param_table: list
     param_pointers: list
     start_pointer: int
+    address_size: [int, int, int, int]

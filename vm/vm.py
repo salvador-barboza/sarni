@@ -180,7 +180,10 @@ class VM:
       self.curr_param_pointer = 0
       self.start_new_frame(
         IP=self.func_dir[C].start_pointer-1,
-        frame_size=6000
+        int_size=self.func_dir[C].address_size[0],
+        float_Size=self.func_dir[C].address_size[1],
+        char_size=self.func_dir[C].address_size[2],
+        bool_size=self.func_dir[C].address_size[3],
       )
     elif instruction == Instruction.PARAM:
       """
@@ -331,8 +334,14 @@ class VM:
   def get_current_frame(self):
     return self.frames[len(self.frames) - 1]
 
-  def start_new_frame(self, IP, frame_size):
-    self.next_frame = Frame(IP=IP, memory=MemoryBlock(LOCAL_MEMORY_BOUNDS[0], LOCAL_MEMORY_BOUNDS[0] + frame_size))
+  def start_new_frame(self, IP, int_size, float_Size, char_size, bool_size):
+    self.next_frame = Frame(IP=IP, memory=MemoryBlock(
+      LOCAL_MEMORY_BOUNDS[0],
+      LOCAL_MEMORY_BOUNDS[1],
+      int_size,
+      float_Size,
+      char_size,
+      bool_size))
 
   def switch_to_new_frame(self):
     self.frames.append(self.next_frame)

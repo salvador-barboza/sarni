@@ -16,18 +16,24 @@ especificar el numero de elementos que cada particion debe tener. Esto, es utili
 se crea la memoria local para una funcion y se especifica el tamaño del ERA.
 """
 class MemoryBlock:
-  def __init__(self, start, end, real_seg_size = None):
+  def __init__(self, start, end, int_size = None, float_Size = None, char_size = None, bool_size = None):
     self.start = start
     self.size = end - start
-    self.seg_size = self.size // 4
+    self.seg_size = (self.size // 4) + 1
 
-    if (real_seg_size == None):
-      real_seg_size = self.seg_size
+    if (int_size == None):
+      int_size = self.seg_size
+    if (float_Size == None):
+      float_Size = self.seg_size
+    if (char_size == None):
+      char_size = self.seg_size
+    if (bool_size == None):
+      bool_size = self.seg_size
 
-    self.int = [None] * real_seg_size
-    self.float = [None] * real_seg_size
-    self.char = [None] * real_seg_size
-    self.bool = [None] * real_seg_size
+    self.int = [None] * int_size
+    self.float = [None] * float_Size
+    self.char = [None] * char_size
+    self.bool = [None] * bool_size
 
 
   """
@@ -44,7 +50,6 @@ class MemoryBlock:
     if self.is_in_int_range(real_addr):
       self.int[self.get_int_addr(real_addr)] = int(value)
     elif self.is_in_float_range(real_addr):
-      print(real_addr)
       self.float[self.get_float_addr(real_addr)] = float(value)
     elif self.is_in_char_range(real_addr):
       self.char[self.get_char_addr(real_addr)] = value
