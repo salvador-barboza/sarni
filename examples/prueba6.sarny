@@ -8,11 +8,12 @@ funcion int busqueda(int n, int ini, int ult, int x)
 var int auxiliar;
 {
 	mientras( ini <= ult) haz {
-		escribe(ini, ' ', ult, '\n);
+		
 
 		auxiliar = ini + (ult - 1) / 2;
 
 		si ( Arreglo[auxiliar] == x ) entonces {
+			escribe("Lo encontré", "\n");
 			regresa auxiliar;
 		}
 
@@ -22,7 +23,7 @@ var int auxiliar;
 			ult = auxiliar - 1;
 		}
 	}
-
+	escribe("No lo encontré", "\n");
 	regresa 1;
 }
 
@@ -40,5 +41,5 @@ principal(){
     Arreglo[8] = 17;
     Arreglo[9] = 19;
     lee(x);
-    escribe(busqueda(n,0,n-1,x));
+    escribe("pos: ",busqueda(n,0,n-1,x));
 }
